@@ -84,22 +84,11 @@ mlops-equipo-27/
 
 ### Preparación del proyecto
 
-Con Python 3.13 y pipx instalado, ejecutar desde la carpeta que contendrá el proyecto:
-
-```bash
-pipx install cookiecutter-data-science
-ccds
-```
-
-Al generar la plantilla, acordar el número de equipo, usar `TC5061-Proyecto-EquipoNN` como nombre del repositorio, seleccionar `include_code_scaffold = Yes` y registrar las opciones elegidas. Incorporar este README a la estructura generada antes del primer commit.
-
-### Incorporación del resto del equipo
-
 >Versión de Python utilizada para instalación inicial: 3.13
 
 ```bash
-git clone https://github.com/USUARIO_O_ORGANIZACION/TC5061-Proyecto-EquipoNN.git
-cd TC5061-Proyecto-EquipoNN
+git clone https://github.com/hespinola/tec-mlops-equipo-27
+cd tec-mlops-equipo-27
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
