@@ -1,4 +1,4 @@
-# Proyecto MiBici · Propuesta y base reproducible
+# Proyecto MiBici
 
 Proyecto colaborativo de **TC5061** para diseñar una solución de Machine Learning aplicada al sistema de bicicleta pública MiBici del Área Metropolitana de Guadalajara.
 
