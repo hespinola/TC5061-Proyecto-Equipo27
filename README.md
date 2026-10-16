@@ -6,6 +6,7 @@ Proyecto colaborativo de **TC5061** para diseñar una solución de Machine Learn
 
 **Integrantes:**
 - Humberto Alejandro Espinola González (A01840066)
+- Daniela Montserrat Enriquez Ballesteros (A01797865)
 
 > **Estado inicial:** este README es el punto de partida para organizar al equipo. La estructura, la ingesta, el módulo de variables y los experimentos están pendientes de implementación. Las decisiones técnicas propuestas aquí se validarán entre los cuatro integrantes.
 
@@ -28,7 +29,7 @@ Los roles propuestos distribuyen la coordinación; todos participamos en las dec
 
 | Integrante | Usuario de GitHub | Responsabilidad propuesta |
 | --- | --- | --- |
-| Pendiente | Pendiente | Pendiente |
+| Daniela Montserrat Enriquez Ballesteros | danimoneb | dependencias y módulo de *feature engineering* (`features.py`) |
 | Pendiente | Pendiente | Pendiente |
 | Pendiente | Pendiente | Pendiente |
 | Pendiente | Pendiente | Pendiente |
