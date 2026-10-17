@@ -29,7 +29,7 @@ Los roles propuestos distribuyen la coordinación; todos participamos en las dec
 
 | Integrante | Usuario de GitHub | Responsabilidad propuesta |
 | --- | --- | --- |
-| Daniela Montserrat Enriquez Ballesteros | danimoneb | dependencias y módulo de *feature engineering* (`features.py`) |
+| Daniela Montserrat Enríquez Ballesteros | danimoneb | Configuración central (`config.py`), dependencias y módulo de *feature engineering* (`features.py`) |
 | Pendiente | Pendiente | Pendiente |
 | Pendiente | Pendiente | Pendiente |
 | Pendiente | Pendiente | Pendiente |
