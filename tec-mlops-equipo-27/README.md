@@ -1,61 +1,36 @@
-# mibici
+# MiBici · módulo del equipo 27
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+Base reproducible de Machine Learning para viajes de MiBici. El proyecto generado
+con Cookiecutter Data Science se encuentra en esta carpeta; el repositorio Git
+está un nivel arriba.
 
-A short description of the project.
+**La documentación principal está en el [README del repositorio](../README.md)**:
+propósito, preguntas, integrantes y roles, datos, particiones, instalación,
+comandos, arquitectura, baselines, resultados, MLflow y colaboración.
 
-## Project Organization
+Con Python 3.13 y el entorno del proyecto activado, ejecutar desde esta carpeta:
 
-```
-├── LICENSE            <- Open-source license if one is chosen
-├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
-├── README.md          <- The top-level README for developers using this project.
-├── data
-│   ├── external       <- Data from third party sources.
-│   ├── interim        <- Intermediate data that has been transformed.
-│   ├── processed      <- The final, canonical data sets for modeling.
-│   └── raw            <- The original, immutable data dump.
-│
-├── docs               <- A default mkdocs project; see www.mkdocs.org for details
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
-│
-├── pyproject.toml     <- Project configuration file with package metadata for 
-│                         mibici and configuration for tools like black
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── setup.cfg          <- Configuration file for flake8
-│
-└── mibici   <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes mibici a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
+```bash
+python -m pip install -r requirements.txt
+python -m pip check
+make test
+make data
+make data
+make features
+make baseline
+make tracking
 ```
 
---------
+La segunda ingesta verifica la versión fijada. El comando de baselines requiere
+código confirmado en Git y registra cuatro runs en `mibici-equipo27`. La UI local
+se abre en [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
+- [Manifiesto](references/data_manifest.json).
+- [Arquitectura y propuesta](references/arquitectura.md).
+- [Resultados e interpretación](reports/resultados_base.md).
+- [Guía de ejecución y evidencias](references/ejecucion-y-evidencias.md).
+- [Exploración](notebooks/1.0-equipo27-exploracion-mibici.ipynb).
+
+Los datos, modelos, credenciales y archivos locales de MLflow se excluyen de Git.
+La ejecución/conclusiones del notebook, el Canvas dentro del repositorio y el PDF
+académico siguen pendientes de incorporar; consultar la lista de cierre principal.
