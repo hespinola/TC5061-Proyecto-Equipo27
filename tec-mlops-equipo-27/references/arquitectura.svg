@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="Arquitectura MiBici del equipo 27">
+ <defs>
+  <marker id="flecha" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10" fill="#436080"/></marker>
+  <style>
+   .box{fill:#fff;stroke:#b9c9db;stroke-width:2;rx:12}
+   .title{font:700 18px sans-serif;fill:#142f50}
+   .body{font:15px sans-serif;fill:#344b63}
+   .arrow{fill:none;stroke:#436080;stroke-width:2;marker-end:url(#flecha)}
+  </style>
+ </defs>
+ <rect width="1200" height="760" fill="#f3f6fa"/>
+ <text x="40" y="43" font-family="sans-serif" font-size="27" font-weight="700" fill="#142f50">MiBici · arquitectura reproducible</text>
+ <text x="40" y="70" class="body">Equipo 27 · procesamiento histórico local · fuentes y resultados trazables</text>
+ <rect x="40" y="100" width="330" height="100" class="box"/>
+ <text x="60" y="130" class="title">Fuentes oficiales</text>
+ <text x="60" y="157" class="body">CSV mensuales de viajes</text>
+ <text x="60" y="181" class="body">Nomenclatura de estaciones</text>
+ <rect x="435" y="100" width="330" height="100" class="box"/>
+ <text x="455" y="130" class="title">Ingesta · dataset.py</text>
+ <text x="455" y="157" class="body">Descarga, codificación y esquema</text>
+ <text x="455" y="181" class="body">Bloques + deduplicación en SQLite</text>
+ <rect x="830" y="100" width="330" height="100" class="box"/>
+ <text x="850" y="130" class="title">Almacenamiento local</text>
+ <text x="850" y="157" class="body">Originales y Parquet comprimido</text>
+ <text x="850" y="181" class="body">Datos y modelos fuera de Git</text>
+ <path d="M370 150H435" class="arrow"/><path d="M765 150H830" class="arrow"/>
+ <rect x="40" y="265" width="330" height="110" class="box"/>
+ <text x="60" y="295" class="title">Versionado en Git</text>
+ <text x="60" y="322" class="body">Manifiesto: URLs, SHA-256 y filas</text>
+ <text x="60" y="347" class="body">Versión de datos + commit de código</text>
+ <rect x="435" y="265" width="330" height="110" class="box"/>
+ <text x="455" y="295" class="title">Panel y variables</text>
+ <text x="455" y="322" class="body">preparar.py + features.py</text>
+ <text x="455" y="347" class="body">Estación × hora; rezagos sin futuro</text>
+ <rect x="830" y="265" width="330" height="110" class="box"/>
+ <text x="850" y="295" class="title">Partición temporal</text>
+ <text x="850" y="322" class="body">Train / validación / prueba</text>
+ <text x="850" y="347" class="body">Ventanas objetivo dentro del corte</text>
+ <path d="M600 200V230H205V265" class="arrow"/>
+ <path d="M995 200V230H600V265" class="arrow"/>
+ <path d="M765 320H830" class="arrow"/>
+ <rect x="40" y="445" width="330" height="100" class="box"/>
+ <text x="60" y="475" class="title">P1 · demanda</text>
+ <text x="60" y="502" class="body">Referencias semanal y diaria</text>
+ <text x="60" y="526" class="body">MAE / RMSE</text>
+ <rect x="435" y="445" width="330" height="100" class="box"/>
+ <text x="455" y="475" class="title">P2 · proxy de desequilibrio</text>
+ <text x="455" y="502" class="body">Frecuencia histórica estación/hora</text>
+ <text x="455" y="526" class="body">Precision / recall / F1 / AP</text>
+ <rect x="830" y="445" width="330" height="100" class="box"/>
+ <text x="850" y="475" class="title">P3 · perfiles de estaciones</text>
+ <text x="850" y="502" class="body">Escalado en train + K-Means</text>
+ <text x="850" y="526" class="body">Silhouette / Davies-Bouldin</text>
+ <path d="M995 375V410H205V445" class="arrow"/>
+ <path d="M995 410H600V445" class="arrow"/><path d="M995 410V445" class="arrow"/>
+ <rect x="230" y="615" width="740" height="105" class="box"/>
+ <text x="250" y="646" class="title">MLflow Tracking · experimento mibici-equipo27</text>
+ <text x="250" y="674" class="body">Parámetros + métricas + etiquetas + artefactos por run</text>
+ <text x="250" y="699" class="body">SQLite y artefactos locales; capturas seleccionadas para el PDF</text>
+ <path d="M205 545V580H400V615" class="arrow"/>
+ <path d="M600 545V615" class="arrow"/>
+ <path d="M995 545V580H800V615" class="arrow"/>
+ <text x="40" y="747" class="body">P2 aproxima flujo, no inventario. Las coordenadas de P3 se reservan para visualización.</text>
+</svg>

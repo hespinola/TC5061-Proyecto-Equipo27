@@ -47,6 +47,22 @@ REZAGOS_HORAS = (24, 168)
 VENTANAS_MOVILES_HORAS = (24, 168)
 VENTANA_RIESGO_HORAS = 3
 UMBRAL_RIESGO = 0.5
+VERSION_PREPROCESAMIENTO = "1"
+K_GRUPOS_CANDIDATOS = (2, 3, 4, 5, 6)
+MUESTRA_SILHOUETTE = 5000
+UMBRALES_CLASIFICACION = (0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.5)
+CHUNK_SIZE = 100_000
+TIMEOUT_DESCARGA = (15, 120)
+PORTAL_DATOS_URL = "https://mibici.net/es/datos-abiertos/"
+# Cabeceras explícitas para servidores que rechazan el cliente HTTP por defecto.
+# No son credenciales ni modifican la validación TLS o los hashes de los archivos.
+CABECERAS_DESCARGA = {
+    "User-Agent": "Mozilla/5.0 (compatible; MiBiciEquipo27/1.0)",
+    "Accept": "text/csv,application/csv,application/octet-stream,text/plain;q=0.9,*/*;q=0.8",
+    "Accept-Language": "es-MX,es;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate",
+    "Referer": PORTAL_DATOS_URL,
+}
 
 # ---------------------------------------------------------------------------
 # Periodo de datos (propuesta del equipo, formato AAAA-MM, ambos inclusive)
@@ -87,6 +103,9 @@ URL_NOMENCLATURA = "https://mibici.net/site/assets/files/1118/nomenclatura_2026_
 
 # Meses del periodo en orden; dataset.py debe descargar exactamente estos.
 MESES = sorted(m for m in URLS_VIAJES if PERIODO_INICIO <= m <= PERIODO_FIN)
+OBSERVACION_INICIO = f"{PERIODO_INICIO}-01"
+_anio, _mes = map(int, PERIODO_FIN.split("-"))
+OBSERVACION_FIN = f"{_anio + (_mes == 12):04d}-{_mes % 12 + 1:02d}-01"
 
 # ---------------------------------------------------------------------------
 # MLflow Tracking

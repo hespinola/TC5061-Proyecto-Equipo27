@@ -1,0 +1,186 @@
+{
+  "preprocesamiento": "1",
+  "inicio": "2025-10-01",
+  "fin_exclusivo": "2026-10-01",
+  "fuentes": {
+    "2025-10": "https://mibici.net/site/assets/files/115104/datos_abiertos_2025_10.csv",
+    "2025-11": "https://mibici.net/site/assets/files/116773/datos_abiertos_2025_11.csv",
+    "2025-12": "https://mibici.net/site/assets/files/118153/datos_abiertos_2025_12.csv",
+    "2026-01": "https://mibici.net/site/assets/files/120163/datos_abiertos_2026_01.csv",
+    "2026-02": "https://mibici.net/site/assets/files/121761/datos_abiertos_2026_02.csv",
+    "2026-03": "https://mibici.net/site/assets/files/123236/datos_abiertos_2026_03.csv",
+    "2026-04": "https://mibici.net/site/assets/files/124927/datos_abiertos_2026_04.csv",
+    "2026-05": "https://mibici.net/site/assets/files/125943/datos_abiertos_2026_05.csv",
+    "2026-06": "https://mibici.net/site/assets/files/127734/datos_abiertos_2026_06.csv",
+    "2026-07": "https://mibici.net/site/assets/files/129006/datos_abiertos_2026_07.csv",
+    "2026-08": "https://mibici.net/site/assets/files/130362/datos_abiertos_2026_08.csv",
+    "2026-09": "https://mibici.net/site/assets/files/131825/datos_abiertos_2026_09.csv",
+    "nomenclatura": "https://mibici.net/site/assets/files/1118/nomenclatura_2026_09.csv"
+  },
+  "archivos": {
+    "2025-10": {
+      "archivo": "datos_abiertos_2025_10.csv",
+      "sha256": "505d9b8b59f65fa223f7889189b74b9fe167c9dda11c7e7053536a360c611370",
+      "bytes": 36442309,
+      "codificacion": "utf-8-sig",
+      "originales": 420064,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 420064
+    },
+    "2025-11": {
+      "archivo": "datos_abiertos_2025_11.csv",
+      "sha256": "f5c4f1b0c0842339dfdfaac756607314bdf5b64d17cde58d754f5a5a2e1a5fbe",
+      "bytes": 32997087,
+      "codificacion": "utf-8-sig",
+      "originales": 380328,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 380328
+    },
+    "2025-12": {
+      "archivo": "datos_abiertos_2025_12.csv",
+      "sha256": "b9fbb7386666ac3d452e3d3ef40ab443c39eef349cd9c97207230371e1d2d001",
+      "bytes": 29089463,
+      "codificacion": "utf-8-sig",
+      "originales": 335420,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 335420
+    },
+    "2026-01": {
+      "archivo": "datos_abiertos_2026_01.csv",
+      "sha256": "c40d7a43eb1c0b1523d6267bcdfac1daad04179ef1f0a7cf93f09b2df82285c2",
+      "bytes": 30985189,
+      "codificacion": "cp1252",
+      "originales": 357180,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 357180
+    },
+    "2026-02": {
+      "archivo": "datos_abiertos_2026_02.csv",
+      "sha256": "2d78fa9686477bdedbf333423e6aadc63b265aaef038eb0b09701746a155ae1f",
+      "bytes": 28953901,
+      "codificacion": "utf-8-sig",
+      "originales": 333756,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 333756
+    },
+    "2026-03": {
+      "archivo": "datos_abiertos_2026_03.csv",
+      "sha256": "97c273aa7465c99d509dfc58436122a979ad51af00bd527cef6144210375d16e",
+      "bytes": 32640591,
+      "codificacion": "utf-8-sig",
+      "originales": 376243,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 376243
+    },
+    "2026-04": {
+      "archivo": "datos_abiertos_2026_04.csv",
+      "sha256": "9165342d0169f2c0ba4fb2c944003147c8a95d77f9058361b451cadf141b2483",
+      "bytes": 30523683,
+      "codificacion": "utf-8-sig",
+      "originales": 351851,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 351851
+    },
+    "2026-05": {
+      "archivo": "datos_abiertos_2026_05.csv",
+      "sha256": "d0ac16ae3a75b8ac40565176e2e607c99c756a385860caa7e2ffb351082c9d45",
+      "bytes": 27427394,
+      "codificacion": "utf-8-sig",
+      "originales": 315895,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 315895
+    },
+    "2026-06": {
+      "archivo": "datos_abiertos_2026_06.csv",
+      "sha256": "a4d195786a3599b155829288a0432cd9e76c6780dc693c0e9579d11e11c49a27",
+      "bytes": 30826027,
+      "codificacion": "utf-8-sig",
+      "originales": 355303,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 355303
+    },
+    "2026-07": {
+      "archivo": "datos_abiertos_2026_07.csv",
+      "sha256": "3f9db9fed985977b175001a984302eae7c61326a75ed93afae9c8fc17bbdb922",
+      "bytes": 33696291,
+      "codificacion": "utf-8-sig",
+      "originales": 388257,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 388257
+    },
+    "2026-08": {
+      "archivo": "datos_abiertos_2026_08.csv",
+      "sha256": "e34f39b9ad204ae0b66f3538894a5f86ed03f46d98701169d3e4d95952d5f671",
+      "bytes": 34158210,
+      "codificacion": "utf-8-sig",
+      "originales": 393524,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 393524
+    },
+    "2026-09": {
+      "archivo": "datos_abiertos_2026_09.csv",
+      "sha256": "00b5cf64cc31a502d01044d905f6e033f9bc1db962e771119742fd25c6cb58b3",
+      "bytes": 42566896,
+      "codificacion": "utf-8-sig",
+      "originales": 490056,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 758,
+      "validos": 489298
+    },
+    "nomenclatura": {
+      "archivo": "nomenclatura.csv",
+      "sha256": "206e45fe633922b634d858142fa21e6fd9f4c421b6435c02980ef290cc2df90d",
+      "bytes": 40841,
+      "codificacion": "utf-8-sig",
+      "estaciones": 484
+    }
+  },
+  "salidas": {
+    "viajes.parquet": {
+      "sha256": "22e02201b8a01a2fc1a74c67199c49011ebbb2f0229a607fa7e7c464b2c74202",
+      "filas": 4497119
+    },
+    "nomenclatura.parquet": {
+      "sha256": "99130663c8b9d8ffc9d1dcca852ff053bc15a0272cd5b33318b6d55d084ecb18",
+      "filas": 484
+    }
+  },
+  "resumen": {
+    "originales": 4497877,
+    "invalidos": 0,
+    "fuera_periodo": 0,
+    "duplicados": 758,
+    "validos": 4497119,
+    "meses": 12,
+    "estaciones_observadas": 471,
+    "estaciones_sin_nomenclatura": [
+      405,
+      407
+    ],
+    "estaciones_capacidad_invalida": 4
+  },
+  "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1"
+}
