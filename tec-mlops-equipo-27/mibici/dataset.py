@@ -20,9 +20,9 @@ from mibici.config import (
     MESES,
     PROCESSED_DATA_DIR,
     RAW_DATA_DIR,
-    REFERENCES_DIR,
     URL_NOMENCLATURA,
     URLS_VIAJES,
+    DATA_MANIFEST_PATH,
 )
 
 app = typer.Typer()
@@ -282,7 +282,7 @@ def write_manifest(raw_files: list[dict], df: pd.DataFrame, output_path: Path, m
 # --------------------------------------------------------------------------- #
 # 4) MLflow
 # --------------------------------------------------------------------------- #
-def read_data_version(manifest_path: Path = REFERENCES_DIR / "manifest.json") -> str:
+def read_data_version(manifest_path: Path = DATA_MANIFEST_PATH) -> str:
     """Para usar desde notebooks/entrenamiento: mlflow.log_param('data_version', read_data_version())."""
     return json.loads(manifest_path.read_text(encoding="utf-8"))["version"]
  
@@ -291,7 +291,7 @@ def read_data_version(manifest_path: Path = REFERENCES_DIR / "manifest.json") ->
 def main(
     input_path: Path = RAW_DATA_DIR,
     output_path: Path = PROCESSED_DATA_DIR / "mibici_viajes.parquet",
-    manifest_path: Path = REFERENCES_DIR / "manifest.json",
+    manifest_path: Path = DATA_MANIFEST_PATH,
     force: bool = False,
     log_mlflow: bool = False,
 ):
