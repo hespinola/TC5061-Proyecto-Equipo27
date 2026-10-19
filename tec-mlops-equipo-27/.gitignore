@@ -189,3 +189,29 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+# ---------------------------------------------------------------------------
+# Exclusiones del proyecto MiBici (equipo 27)
+# ---------------------------------------------------------------------------
+# Datos de MiBici en cualquier formato, aunque queden fuera de data/.
+*.csv
+*.parquet
+
+# MLflow: runs, artefactos y base local de tracking.
+mlruns/
+mlartifacts/
+mlflow.db
+mlflow.db-*
+
+# Modelos serializados (se conserva solo el marcador de la carpeta).
+/models/*
+!/models/.gitkeep
+*.pkl
+*.pickle
+*.joblib
+*.onnx
+
+# Variables de entorno y credenciales (se versiona solo la plantilla).
+.env.*
+!.env.example
+*.pem
+*.key
