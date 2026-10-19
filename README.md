@@ -47,7 +47,7 @@ los cruces intermedios del umbral y no permite afirmar ahorros operativos.
 | Humberto Alejandro Espinola González | A01840066 | hespinola | Integración, ingesta reproducible, baselines, pruebas y documentación. |
 | Daniela Montserrat Enríquez Ballesteros | A01797865 | danimeb | Configuración, dependencias y módulo de feature engineering. |
 | Humberto Carrillo Gómez | A01377246 | humbertCG | Preprocesamiento exploratorio. |
-| Oscar Alejandro Torres Maya | A01377686 | OscarAlejandro24 | Dataset en |
+| Oscar Alejandro Torres Maya | A01377686 | OscarAlejandro24 | Dataset exploratorio. |
 
 ## Estructura real del repositorio
 
