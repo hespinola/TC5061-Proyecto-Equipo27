@@ -263,3 +263,5 @@ Las referencias completas en formato APA 7 están en
 - [scikit-learn: evaluación de modelos](https://scikit-learn.org/stable/modules/model_evaluation.html).
 - [ML Canvas](https://www.ownml.co/).
 - [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow).
+- [OpenAI](https://chatgpt.com)
+- [Claude](https://claude.ai)
