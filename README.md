@@ -5,8 +5,10 @@ Proyecto colaborativo de **TC5061** para diseñar una solución de Machine Learn
 **Equipo:** 27
 
 **Integrantes:**
+
 - Humberto Alejandro Espinola González (A01840066)
 - Daniela Montserrat Enriquez Ballesteros (A01797865)
+- Oscar Alejandro Torres Maya (A01377686)
 
 > **Estado inicial:** este README es el punto de partida para organizar al equipo. La estructura, la ingesta, el módulo de variables y los experimentos están pendientes de implementación. Las decisiones técnicas propuestas aquí se validarán entre los cuatro integrantes.
 
@@ -27,12 +29,12 @@ Para empezar a colaborar:
 
 Los roles propuestos distribuyen la coordinación; todos participamos en las decisiones, el código y las revisiones.
 
-| Integrante | Usuario de GitHub | Responsabilidad propuesta |
-| --- | --- | --- |
-| Daniela Montserrat Enríquez Ballesteros | danimoneb | Configuración central (`config.py`), dependencias y módulo de *feature engineering* (`features.py`) |
-| Pendiente | Pendiente | Pendiente |
-| Pendiente | Pendiente | Pendiente |
-| Pendiente | Pendiente | Pendiente |
+| Integrante                               | Usuario de GitHub | Responsabilidad propuesta                                                                                   |
+| ---------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| Daniela Montserrat Enríquez Ballesteros | danimoneb         | Configuración central (`config.py`), dependencias y módulo de *feature engineering* (`features.py`) |
+| Oscar Alejandro Torres Maya              | OscarAlejandro24  | Creación del dataset con versionado de datos (dataset.py)                                                  |
+| Pendiente                                | Pendiente         | Pendiente                                                                                                   |
+| Pendiente                                | Pendiente         | Pendiente                                                                                                   |
 
 ## Datos y reproducibilidad
 
@@ -85,7 +87,7 @@ mlops-equipo-27/
 
 ### Preparación del proyecto
 
->Versión de Python utilizada para instalación inicial: 3.13
+> Versión de Python utilizada para instalación inicial: 3.13
 
 ```bash
 git clone https://github.com/hespinola/tec-mlops-equipo-27
@@ -99,11 +101,11 @@ python -m pip install -r requirements.txt
 
 Se proponen exponer los siguientes comandos y actualizar esta sección cuando se hayan probado desde un clon limpio:
 
-| Acción | Comando previsto | Resultado esperado |
-| --- | --- | --- |
-| Ingesta reproducible | `make data` | Descarga, normalización, Parquet y manifiesto |
-| Experimento base | `make baseline` | Al menos un run para P1, P2 y P3 |
-| Consultar resultados locales | `make tracking` | Interfaz de MLflow |
+| Acción                      | Comando previsto  | Resultado esperado                             |
+| ---------------------------- | ----------------- | ---------------------------------------------- |
+| Ingesta reproducible         | `make data`     | Descarga, normalización, Parquet y manifiesto |
+| Experimento base             | `make baseline` | Al menos un run para P1, P2 y P3               |
+| Consultar resultados locales | `make tracking` | Interfaz de MLflow                             |
 
 **Estos comandos aún no están implementados ni verificados.** El periodo, las rutas, la semilla y la configuración de tracking se centralizarán en `mibici/config.py`. El README final incluirá los comandos reales y sus requisitos.
 
