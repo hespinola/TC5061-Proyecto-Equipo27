@@ -59,8 +59,28 @@ create_environment:
 
 ## Make dataset
 .PHONY: data
-data: requirements
-	$(PYTHON_INTERPRETER) mibici/dataset.py
+data:
+	$(PYTHON_INTERPRETER) -m mibici.dataset
+
+## Build hourly panel and features from verified data
+.PHONY: features
+features:
+	$(PYTHON_INTERPRETER) -m mibici.preparar
+
+## Execute baselines P1, P2 and P3 and log runs in MLflow
+.PHONY: baseline
+baseline:
+	$(PYTHON_INTERPRETER) -m mibici.modeling.train
+
+## Open local MLflow Tracking UI (http://127.0.0.1:5000)
+.PHONY: tracking
+tracking:
+	$(PYTHON_INTERPRETER) -m mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
+
+## Run reproducible tests without downloading MiBici files
+.PHONY: test
+test:
+	$(PYTHON_INTERPRETER) -m unittest discover -s tests -v
 
 
 #################################################################################
