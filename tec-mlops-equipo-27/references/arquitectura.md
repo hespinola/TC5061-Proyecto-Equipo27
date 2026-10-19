@@ -92,3 +92,5 @@ si el proveedor cambia o retira un archivo.
 - MLflow. (s. f.). *ML Experiment Tracking*. https://mlflow.org/docs/latest/ml/tracking/
 - scikit-learn developers. (s. f.). *Metrics and scoring: Quantifying the quality of predictions*. https://scikit-learn.org/stable/modules/model_evaluation.html
 - Dorard, L. (2015). *Machine Learning Canvas*. OWNML. https://www.ownml.co/
+- OpenAI. (2024). ChatGPT (Versión GPT-4) [Modelo de lenguaje grande]. https://chatgpt.com
+- Anthropic. (2024). Claude (Versión 3.5 Sonnet) [Modelo de lenguaje grande]. https://claude.ai
