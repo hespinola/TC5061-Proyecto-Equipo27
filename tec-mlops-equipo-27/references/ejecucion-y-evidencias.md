@@ -1,6 +1,6 @@
 # Ejecución y evidencias de la primera entrega
 
-Estado: **ingesta reproducida y panel generado por el equipo; baselines pendientes**.
+Estado: **ingesta reproducida, panel generado y cuatro baselines ejecutados por el equipo**.
 Los conteos siguientes provienen de las ejecuciones reportadas y del manifiesto
 real compartido el 18 de octubre de 2026; no son datos de pruebas sintéticas.
 
@@ -26,8 +26,21 @@ Versión completa:
 `ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1`.
 
 Se reportaron 27 pruebas satisfactorias y `pip check` sin conflictos antes del
-ajuste de transporte HTTP 406. Confirmar también la suite ampliada de descargas
-antes del commit del código que se utilizará para los experimentos.
+ajuste de transporte HTTP 406. La salida de la suite ampliada de descargas todavía
+no se ha adjuntado a esta evidencia; confirmar su resultado en el cierre del PR.
+
+Los baselines se ejecutaron con el commit
+`d921472702dc1c0b2a3af8ca3179b0567e913c8e`. Los resultados exactos están en
+`reports/baseline_results.json` y su interpretación en `reports/resultados_base.md`.
+Las cuatro capturas de la interfaz están incorporadas y revisadas. El notebook
+ejecutado sigue pendiente de incorporar.
+
+La lista de MLflow muestra dos ejecuciones completas (ocho runs). Las capturas de
+detalle, artefacto y comparación de P1 corresponden a la ejecución de las 20:33,
+mientras que `baseline_results.json` registra la ejecución posterior de las 20:35.
+Ambas evidencias de P1 muestran el mismo commit, versión de datos y métricas.
+No confundir sus IDs de run: el JSON es la referencia para los cuatro IDs de la
+ejecución reportada en la tabla de resultados.
 
 ## 1. Preparar el entorno y revisar el código
 

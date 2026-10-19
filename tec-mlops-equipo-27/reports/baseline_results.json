@@ -1,0 +1,72 @@
+{
+  "estado": "ejecutado",
+  "fecha_utc": "2026-10-19T02:35:30.211097+00:00",
+  "git_commit": "d921472702dc1c0b2a3af8ca3179b0567e913c8e",
+  "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+  "segundos": 14.70213345799857,
+  "runs": [
+    {
+      "pregunta": "P1",
+      "modelo": "P1-baseline-rezago-168h",
+      "run_id": "9ea871aaa9ce4ebaae7a04bdf7a25f82",
+      "metricas": {
+        "train_filas": 3006864,
+        "validation_mae": 0.8689815766043422,
+        "validation_rmse": 1.8244534686039475,
+        "validation_filas": 350424,
+        "test_mae": 0.9337446196326847,
+        "test_rmse": 1.9212002214394226,
+        "test_filas": 689544
+      }
+    },
+    {
+      "pregunta": "P1",
+      "modelo": "P1-baseline-rezago-24h",
+      "run_id": "14a58f067827468db3516263d531c7f9",
+      "metricas": {
+        "train_filas": 3074688,
+        "validation_mae": 0.9107081706732416,
+        "validation_rmse": 1.9666781587644624,
+        "validation_filas": 350424,
+        "test_mae": 1.0354654670332857,
+        "test_rmse": 2.1946209803592707,
+        "test_filas": 689544
+      }
+    },
+    {
+      "pregunta": "P2",
+      "modelo": "frecuencia-estacion-hora",
+      "run_id": "843c94bd23b64dc88a732d3b027aa333",
+      "metricas": {
+        "train_filas": 2993158,
+        "train_positive_rate": 0.019572972759874352,
+        "filas_sin_capacidad_valida": 17520,
+        "validation_precision": 0.4036676977463544,
+        "validation_recall": 0.3147829083390765,
+        "validation_f1": 0.3537270087124879,
+        "validation_average_precision": 0.30913192828331637,
+        "validation_positive_rate": 0.01667825677159064,
+        "validation_filas": 347998,
+        "test_precision": 0.45306534920278463,
+        "test_recall": 0.2697372819038706,
+        "test_f1": 0.3381521055939661,
+        "test_average_precision": 0.3257755956829844,
+        "test_positive_rate": 0.021816362782530574,
+        "test_filas": 685678
+      },
+      "umbral": 0.3
+    },
+    {
+      "pregunta": "P3",
+      "modelo": "kmeans",
+      "run_id": "becb2a5062f840708a5f7b30fd0d77f9",
+      "metricas": {
+        "train_silhouette": 0.08307573865578687,
+        "train_davies_bouldin": 1.953043408364402,
+        "estaciones_agrupadas": 424,
+        "estaciones_excluidas": 47
+      },
+      "k": 6
+    }
+  ]
+}
