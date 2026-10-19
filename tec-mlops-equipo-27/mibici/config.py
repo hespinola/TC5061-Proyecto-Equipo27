@@ -41,6 +41,13 @@ DATA_MANIFEST_PATH = REFERENCES_DIR / "data_manifest.json"
 EQUIPO = "equipo27"
 SEED = 42
 
+# Feature engineering: predicción al inicio de t, con observaciones anteriores a t.
+# La ventana futura de P2 no es la anticipación de las variables predictoras.
+REZAGOS_HORAS = (24, 168)
+VENTANAS_MOVILES_HORAS = (24, 168)
+VENTANA_RIESGO_HORAS = 3
+UMBRAL_RIESGO = 0.5
+
 # ---------------------------------------------------------------------------
 # Periodo de datos (propuesta del equipo, formato AAAA-MM, ambos inclusive)
 # ---------------------------------------------------------------------------
