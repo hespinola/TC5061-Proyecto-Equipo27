@@ -1,174 +1,265 @@
-# Proyecto MiBici
+# Proyecto MiBici · Equipo 27
 
-Proyecto colaborativo de **TC5061** para diseñar una solución de Machine Learning aplicada al sistema de bicicleta pública MiBici del Área Metropolitana de Guadalajara.
+**TC5061 · Primera entrega del proyecto integrador**
 
-**Equipo:** 27
+Propuesta y base reproducible de Machine Learning para analizar la demanda, el
+desequilibrio de flujo y los patrones de uso de estaciones de MiBici, el sistema
+de bicicleta pública del Área Metropolitana de Guadalajara.
 
-**Integrantes:**
-- Humberto Alejandro Espinola González (A01840066)
-- Daniela Montserrat Enriquez Ballesteros (A01797865)
+La implementación procesó **4,497,119 viajes válidos**, construyó un panel de
+**4,125,960 filas estación × hora** y registró cuatro runs de referencia en MLflow.
+La ingesta se ejecutó dos veces con la misma versión de datos.
 
-> **Estado inicial:** este README es el punto de partida para organizar al equipo. La estructura, la ingesta, el módulo de variables y los experimentos están pendientes de implementación. Las decisiones técnicas propuestas aquí se validarán entre los cuatro integrantes.
+La estructura se generó con Cookiecutter Data Science y su módulo se llama `mibici`.
 
-## Propósito
+## Documentos y evidencias
 
-Construir una base reproducible para explorar y preparar millones de registros de viajes, proponer modelos de regresión, clasificación y clustering, y registrar una línea base por pregunta en MLflow. Esta primera entrega será el fundamento del proyecto integrador y de las siguientes entregas del curso.
+- [Arquitectura, pipeline, modelos candidatos y justificación](tec-mlops-equipo-27/references/arquitectura.md).
+- [Diagrama de arquitectura](tec-mlops-equipo-27/references/arquitectura.svg).
+- [Manifiesto de datos](tec-mlops-equipo-27/references/data_manifest.json).
+- [Resultados exactos de los baselines](tec-mlops-equipo-27/reports/baseline_results.json).
+- [Interpretación de resultados y limitaciones](tec-mlops-equipo-27/reports/resultados_base.md).
+- [Guía de ejecución y evidencias](tec-mlops-equipo-27/references/ejecucion-y-evidencias.md).
+- [Notebook de exploración](tec-mlops-equipo-27/notebooks/1.0-equipo27-exploracion-mibici.ipynb).
+- [ML Canvas](tec-mlops-equipo-27/references/ml_canvas.pdf).
 
-El proyecto debe permitir reconstruir los datos utilizados, rastrear las decisiones del equipo y comparar los resultados de nuevos modelos con los experimentos base.
+## Propósito y preguntas
 
-## Bienvenidos al equipo
+El objetivo es preparar y explorar millones de registros, implementar variables
+reutilizables, versionar los datos y establecer baselines que permitan comparar
+las mejoras de las siguientes entregas.
 
-Para empezar a colaborar:
-
-1. Completar su nombre, usuario y responsabilidad en la tabla siguiente.
-2. Revisar la actividad y acordar las preguntas, el periodo de datos y las herramientas.
-3. Tomar una tarea de la lista de pendientes y crear un Issue con su alcance y criterio de aceptación.
-4. Trabajar en una rama propia, abrir un Pull Request y revisar el trabajo de otro integrante.
-
-Los roles propuestos distribuyen la coordinación; todos participamos en las decisiones, el código y las revisiones.
-
-| Integrante | Usuario de GitHub | Responsabilidad propuesta |
+| Pregunta | Formulación y granularidad | Usuario y decisión |
 | --- | --- | --- |
-| Daniela Montserrat Enríquez Ballesteros | danimoneb | Configuración central (`config.py`), dependencias y módulo de *feature engineering* (`features.py`) |
-| Pendiente | Pendiente | Pendiente |
-| Pendiente | Pendiente | Pendiente |
-| Pendiente | Pendiente | Pendiente |
+| **P1 · Regresión** | Al inicio de la hora `t`, predecir cuántos viajes comenzarán en cada estación durante esa hora. Entidad: estación × hora. | Operación: apoyar la planeación de bicicletas según demanda prevista. |
+| **P2 · Clasificación** | Al inicio de `t`, predecir si la magnitud del flujo neto total de las tres horas que comienzan en `t` será al menos el 50 % de la capacidad. Entidad: estación × hora. | Rebalanceo: priorizar estaciones por probabilidad de desequilibrio. |
+| **P3 · Clustering** | Agrupar estaciones por distribución horaria de uso, volumen y balance llegadas/salidas, utilizando únicamente entrenamiento. Entidad: estación. | Operación y planeación: identificar patrones similares y formular hipótesis de estrategias diferenciadas. |
 
-## Datos y reproducibilidad
+**P2 es una aproximación:** MiBici no publica inventario de bicicletas por estación.
+La etiqueta se calcula como `abs(suma(llegadas - salidas)) >= 0.5 × capacidad`
+sobre `[t, t + 3 horas)`. No observa estaciones vacías o llenas, no detecta todos
+los cruces intermedios del umbral y no permite afirmar ahorros operativos.
 
-Fuente principal: [datos abiertos de MiBici](https://mibici.net/es/datos-abiertos/), con archivos CSV mensuales de viajes y nomenclatura de estaciones. La actividad señala la [nomenclatura de septiembre de 2026](https://mibici.net/site/assets/files/1118/nomenclatura_2026_09.csv) como referencia; su elección y compatibilidad con el periodo de viajes deben justificarse.
+## Equipo y colaboración
 
-Antes de entrenar, registraremos:
+| Integrante | Matrícula | GitHub | Responsabilidad |
+| --- | --- | --- | --- |
+| Humberto Alejandro Espinola González | A01840066 | hespinola | Integración, ingesta reproducible, baselines, pruebas y documentación. |
+| Daniela Montserrat Enríquez Ballesteros | A01797865 | danimeb | Configuración, dependencias y módulo de feature engineering. |
+| Humberto Carrillo Gómez | A01377246 | humbertCG | Preprocesamiento exploratorio. |
+| Oscar Alejandro Torres Maya | A01377686 | OscarAlejandro24 | Dataset en |
 
-- Periodo seleccionado, enlaces exactos de descarga y fecha de obtención.
-- Tamaño real: meses descargados, viajes originales y válidos, y estaciones utilizadas.
-- Columnas originales necesarias, reglas de limpieza y construcción de cada objetivo.
-- Condiciones de uso de la fuente y tratamiento de los campos personales. Utilizaremos únicamente las variables necesarias y presentaremos resultados agregados.
-- Fechas de entrenamiento, validación y prueba, con justificación de la partición.
+## Estructura real del repositorio
 
-**Propuesta de ingesta:** descargar desde `dataset.py`, normalizar columnas, codificaciones y fechas, validar los registros y generar archivos Parquet. El proceso deberá ejecutarse desde un clon limpio sin descargas o ediciones manuales.
-
-**Propuesta de versionado:** guardar en Git un manifiesto en `references/data_manifest.json` con URLs, hashes SHA-256, conteos, periodo y versión del proceso. Registrar su identificador en MLflow. Si un archivo de origen cambia, la ingesta deberá detectar la discrepancia; para reconstruir la misma versión, el equipo deberá conservar los archivos originales en un almacenamiento compartido fuera de Git.
-
-Las variables de predicción usarán solo información disponible en ese momento. Los rezagos se calcularán con datos anteriores y los transformadores se ajustarán con entrenamiento. Si usamos una nomenclatura reciente para viajes históricos, documentaremos la limitación de su capacidad y cobertura.
-
-## Estructura prevista
-
-Generaremos la base con [Cookiecutter Data Science](https://cookiecutter-data-science.drivendata.org/) y `include_code_scaffold = Yes`. El nombre de módulo propuesto es `mibici`; esta estructura todavía no está creada.
+El proyecto generado está **un nivel dentro del repositorio**. Los comandos de
+Python y `make` de este documento se ejecutan desde ese subdirectorio.
 
 ```text
-mlops-equipo-27/
-├── README.md
+tec-mlops-equipo-27/                 # Raíz del repositorio Git
+├── README.md                       # Este documento
 ├── .gitignore
-├── requirements.txt          # Propuesta: dependencias con versiones fijas
-├── Makefile                  # Comandos comunes
-├── data/                     # Datos locales, excluidos de Git
-│   ├── raw/
-│   ├── external/
-│   ├── interim/
-│   └── processed/
-├── mibici/                   # Código reutilizable
-│   ├── config.py             # Rutas, fechas, semillas y configuración
-│   ├── dataset.py            # Descarga, validación y versionado
-│   ├── features.py           # Transformaciones documentadas por pregunta
-│   └── modeling/             # Entrenamiento y evaluación
-├── notebooks/                # Exploración
-├── models/                   # Modelos locales, excluidos de Git
-├── references/               # ML Canvas, arquitectura y manifiesto
-└── reports/
-    └── figures/              # Figuras y evidencias de la propuesta
+└── tec-mlops-equipo-27/             # Proyecto generado con ccds
+    ├── README.md                   # Acceso a documentación y ejecución
+    ├── LICENSE
+    ├── Makefile
+    ├── pyproject.toml
+    ├── requirements.txt
+    ├── .env.example
+    ├── data/                       # Contenido local excluido de Git
+    │   ├── raw/                    # CSV originales
+    │   └── processed/              # Parquet limpio y panel horario
+    ├── mibici/
+    │   ├── config.py               # Rutas, fechas, fuentes, semillas y parámetros
+    │   ├── dataset.py              # Descarga, limpieza, Parquet y manifiesto
+    │   ├── preparar.py             # Agregación por bloques y construcción del panel
+    │   ├── features.py             # Funciones reutilizables por pregunta
+    │   └── modeling/
+    │       └── train.py            # Baselines, evaluación y MLflow
+    ├── notebooks/                  # Exploración
+    ├── references/                 # Manifiesto, arquitectura y guía de evidencias
+    ├── reports/
+    │   ├── baseline_results.json   # Métricas e IDs de runs
+    │   ├── resultados_base.md      # Interpretación
+    │   └── figures/                # Gráficas y capturas seleccionadas
+    ├── models/                    # Modelos locales, excluidos de Git
+    └── tests/                     # Pruebas sin descargas de MiBici
 ```
 
-`features.py` contendrá funciones con docstrings que expliquen cada transformación, la pregunta que atiende y cómo evita utilizar información futura.
+La plantilla también conserva archivos auxiliares y carpetas para documentación.
+`predict.py` y `plots.py` no forman parte del pipeline validado de esta entrega.
 
-## Instalación y ejecución
+## Instalación
 
-### Preparación del proyecto
+Requisitos: **Python 3.13**, Git, acceso HTTPS a MiBici y un entorno virtual.
+Los ejemplos usan macOS/Linux y `make`. Se verificó `pip check` sin conflictos
+en el entorno de ejecución del equipo; las dependencias principales tienen
+versiones fijas en `requirements.txt`.
 
->Versión de Python utilizada para instalación inicial: 3.13
+Mientras la implementación está en revisión, clonar su rama publicada:
 
 ```bash
-git clone https://github.com/hespinola/tec-mlops-equipo-27
-cd tec-mlops-equipo-27
-python -m venv .venv
+git clone https://github.com/hespinola/tec-mlops-equipo-27.git
+cd tec-mlops-equipo-27/tec-mlops-equipo-27
+
+python3.13 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+python -m pip check
 ```
 
-### Comandos del proyecto pendientes de implementar
+La configuración local de tracking se puede personalizar mediante `.env`, siguiendo
+`.env.example`. Para reproducir el flujo local descrito, usar el valor por defecto
+de `MLFLOW_TRACKING_URI`, sin configurar un servidor externo.
 
-Se proponen exponer los siguientes comandos y actualizar esta sección cuando se hayan probado desde un clon limpio:
+## Ejecución reproducible
 
-| Acción | Comando previsto | Resultado esperado |
+| Acción | Comando | Equivalente Python |
 | --- | --- | --- |
-| Ingesta reproducible | `make data` | Descarga, normalización, Parquet y manifiesto |
-| Experimento base | `make baseline` | Al menos un run para P1, P2 y P3 |
-| Consultar resultados locales | `make tracking` | Interfaz de MLflow |
+| Pruebas locales | `make test` | `python -m unittest discover -s tests -v` |
+| Ingesta y verificación de datos | `make data` | `python -m mibici.dataset` |
+| Panel y variables | `make features` | `python -m mibici.preparar` |
+| Cuatro runs de baselines | `make baseline` | `python -m mibici.modeling.train` |
+| UI local de MLflow | `make tracking` | `python -m mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000` |
 
-**Estos comandos aún no están implementados ni verificados.** El periodo, las rutas, la semilla y la configuración de tracking se centralizarán en `mibici/config.py`. El README final incluirá los comandos reales y sus requisitos.
-
-## Pipeline y experimentos
-
-Flujo propuesto: **fuentes → ingesta y validación → datos versionados → limpieza y agregación → variables → entrenamiento → evaluación → MLflow**.
-
-Para cada pregunta acordaremos un baseline sencillo, al menos un modelo candidato y métricas coherentes con la tarea y la decisión operativa. Los resultados están pendientes; no se han ejecutado experimentos.
-
-En [MLflow Tracking](https://mlflow.org/docs/latest/ml/tracking/) usaremos un experimento con nombre `mibici-equipo27` y al menos un run por pregunta ejecutado desde el código del repositorio. Cada run registrará:
-
-- Parámetros: periodo, versión de datos, partición, semilla y configuración del modelo.
-- Métricas de evaluación acordadas para la pregunta.
-- Etiquetas: equipo, pregunta y commit de Git.
-- Al menos un artefacto, como una gráfica, tabla de evaluación o mapa de grupos.
-
-Guardaremos evidencias de la lista de runs, el detalle de un run, un artefacto y la comparación de dos o más runs para el PDF de entrega.
-
-## Colaboración con Git y GitHub
-
-Seguiremos [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): rama de trabajo → commits → Pull Request → revisión → integración.
-
-- **Rama principal:** `main`. Pendiente configurar su protección y exigir al menos una aprobación antes de integrar cambios.
-- **Ramas:** `feat/descripcion`, `fix/descripcion` o `docs/descripcion`; por ejemplo, `feat/ingesta-mensual`.
-- **Commits:** prefijos `feat:`, `fix:`, `docs:`, `refactor:` o `chore:`; por ejemplo, `docs: documentar fuentes de datos`.
-- **Pull Requests:** indicar objetivo, cambios, cómo se verificaron y el Issue relacionado. Solicitar revisión de otro integrante y resolver sus comentarios.
-- **Participación:** cada integrante deberá tener commits propios, abrir al menos un Pull Request y revisar al menos uno de otra persona.
-
-Ejemplo para iniciar una contribución después de clonar el repositorio:
+Orden de ejecución:
 
 ```bash
-git checkout main
-git pull --rebase origin main
-git checkout -b docs/completar-integrantes
+make test
+make data
+make data
+make features
+make baseline
+make tracking
 ```
 
-## Archivos que no se subirán a Git
+La segunda ingesta debe reproducir el manifiesto fijado. `make baseline` verifica
+los Parquet y reconstruye el panel antes de evaluar, por lo que `make features` es
+una etapa de inspección útil pero no necesita repetirse manualmente para entrenar.
+El entrenamiento exige que el código esté confirmado en Git; si hay cambios en
+`mibici/`, `requirements.txt` o `pyproject.toml`, se detiene para evitar etiquetar
+un run con un commit que no describe su implementación.
 
-Antes de agregar datos o ejecutar experimentos, ampliaremos `.gitignore` para excluir datos de MiBici, contenido de `models/`, `mlruns/`, `mlartifacts/`, bases locales de tracking, `.env`, credenciales y entornos virtuales. Se conservarán únicamente los marcadores de carpetas que requiera la plantilla.
+La ingesta y los baselines se ejecutan sin descargas manuales, ediciones de CSV ni
+dependencia de un notebook. Repetir los baselines crea nuevos IDs de run y fechas;
+se comparan versión de datos, configuración y métricas, no esos identificadores.
 
-Versionaremos código, configuración sin secretos, dependencias, manifiestos, documentación y evidencias seleccionadas. No basta con excluir un archivo después: los datos, modelos y credenciales tampoco deben quedar en el historial.
+### Variables originales y tratamiento
 
-## Pendientes para la primera entrega
+La tabla limpia conserva únicamente `viaje_id`, `inicio_del_viaje`,
+`fin_del_viaje`, `origen_id` y `destino_id`. Se normalizan nombres, fechas locales
+y tipos de identificador; se eliminan registros inválidos y duplicados idénticos.
+Un ID repetido con contenido contradictorio provoca un error.
 
-- [ ] Confirmar número de equipo, integrantes y acceso del profesor al repositorio.
-- [ ] Generar la estructura con `ccds`, fijar dependencias y ampliar `.gitignore`.
-- [ ] Proteger `main` y acordar responsabilidades e Issues.
-- [ ] Incorporar las preguntas oficiales y completar el ML Canvas.
-- [ ] Justificar periodo, objetivos, particiones y tratamiento de datos personales.
-- [ ] Implementar y verificar la ingesta reproducible y el versionado.
-- [ ] Crear al menos un notebook de exploración y el módulo `features.py`.
-- [ ] Definir pipeline, baseline, modelos candidatos y métricas por pregunta.
-- [ ] Guardar el ML Canvas y el diagrama de arquitectura justificado en `references/`.
-- [ ] Ejecutar los tres baselines y registrar parámetros, métricas, etiquetas y artefactos.
-- [ ] Capturar las cuatro evidencias de MLflow.
-- [ ] Verificar instalación, ingesta y experimento base desde un clon limpio.
-- [ ] Confirmar commits, un Pull Request abierto y una revisión por integrante.
-- [ ] Completar este README con decisiones y comandos verificados.
-- [ ] Preparar `TC5061_Propuesta_Proyecto_Equipo27.pdf` con el enlace al repositorio, propuesta, resultados, evidencias y referencias APA 7.
+La nomenclatura aporta `id`, `latitude`, `longitude`, `dpcapacity` y, cuando existe,
+`name`. Se rechazan IDs duplicados y se identifican capacidades o coordenadas inválidas.
 
-## Referencias de trabajo
+La ingesta usa bloques de 100,000 viajes, escritura Parquet y SQLite temporal para
+deduplicar globalmente sin mantener todos los viajes crudos en memoria. La generación
+de variables trabaja sobre el panel agregado. Es procesamiento local por bloques;
+no se afirma ejecución distribuida ni uso de Spark.
+
+## Partición temporal y feature engineering
+
+| Partición | Fechas |
+| --- | --- |
+| Entrenamiento | 2025-10-01 a 2026-06-30 |
+| Validación | 2026-07-01 a 2026-07-31 |
+| Prueba | 2026-08-01 a 2026-09-30 |
+
+No se barajan filas. Los rezagos se construyen antes de filtrar las particiones
+para conservar el historial disponible al inicio de validación/prueba. La referencia
+semanal y P2 requieren calentamiento de 168 horas. Para P2, cada ventana objetivo
+debe terminar dentro de su partición: se excluyen sus últimas dos horas.
+
+`features.py` contiene funciones reutilizables con docstrings:
+
+- Panel horario completo con salidas, llegadas y flujo neto, incluidas horas en cero.
+- Calendario y codificación cíclica; festivos opcionales solo con fuente documentada.
+- Rezagos de 24/168 horas y medias móviles desplazadas hacia el pasado.
+- Capacidad y flujo acumulado desde medianoche hasta antes de `t`, relativo a capacidad.
+- Objetivo de P2 y cierre exclusivo de su ventana para filtrar sin invadir el siguiente corte.
+- Perfil de 48 componentes horarios de P3, volumen diario y balance llegadas/salidas.
+
+Las salidas, llegadas y flujo neto contemporáneos, así como las columnas `objetivo_`,
+no son predictores de P1/P2. El acumulado diario mide desequilibrio desde medianoche,
+no inventario ni rebalanceo nocturno. La anticipación admitida por el pipeline es
+la predicción al inicio de `t`; la ventana futura de tres horas de P2 es un concepto
+distinto. La escala y los perfiles de P3 se ajustan únicamente con entrenamiento.
+
+## Pipeline, baselines y modelos candidatos
+
+Flujo: **fuentes → ingesta/validación → Parquet + manifiesto → panel y variables →
+partición temporal → evaluación → MLflow → resultados y evidencias**.
+
+| Pregunta | Baseline ejecutado | Candidato propuesto | Métricas |
+| --- | --- | --- | --- |
+| P1 | Misma hora de la semana anterior; referencia adicional del día anterior. | Gradient boosting con variables históricas y validación temporal. | MAE en viajes/estación/hora y RMSE para complementar errores grandes. |
+| P2 | Frecuencia de positivos por estación y hora en train; respaldo global de train para combinaciones nuevas. Umbral elegido en validación por máximo F1 y desempates por recall/precision. | Regresión logística o gradient boosting. | Precision, recall, F1, average precision y prevalencia. |
+| P3 | Perfiles elegibles de train, StandardScaler y K-Means; k entre 2 y 6 por silhouette. | Clustering jerárquico sobre las mismas variables y escala. | Silhouette, Davies-Bouldin, tamaños e interpretación de grupos. |
+
+Los modelos candidatos son parte de la propuesta; **no se presentan como entrenados**.
+Las coordenadas de P3 se reservan para visualizar el mapa. La elección de k en
+train no equivale a medir desempeño supervisado en test; el estudio de estabilidad
+entre semillas/periodos queda para una entrega posterior.
+
+
+### P1 · Evaluación por estación y hora
+
+| Referencia | MAE validación | RMSE validación | MAE prueba | RMSE prueba |
+| --- | ---: | ---: | ---: | ---: |
+| Semanal, 168 h | 0.868982 | 1.824453 | 0.933745 | 1.921200 |
+| Diaria, 24 h | 0.910708 | 1.966678 | 1.035465 | 2.194621 |
+
+La referencia semanal tiene menor error en validación y prueba. Ambas referencias
+se evalúan en las mismas 350,424 filas de validación y 689,544 de prueba. Las
+gráficas de totales diarios son visualizaciones; no cambian la granularidad de las métricas.
+
+### P2 · Umbral 0.30, seleccionado en validación
+
+| Métrica | Validación | Prueba |
+| --- | ---: | ---: |
+| Precision | 0.403668 | 0.453065 |
+| Recall | 0.314783 | 0.269737 |
+| F1 | 0.353727 | 0.338152 |
+| Average precision | 0.309132 | 0.325776 |
+| Proporción de positivos | 0.016678 | 0.021816 |
+| Filas evaluadas | 347,998 | 685,678 |
+
+El baseline detecta aproximadamente el 27 % de las filas positivas del proxy en
+prueba y omite alrededor del 73 %. Es una limitación para una futura priorización,
+no una medición de estaciones realmente vacías/llenas. Las ventanas horarias se
+solapan y no representan incidentes operativos independientes.
+
+### P3 · Evaluación sobre perfiles de entrenamiento
+
+| Medida | Resultado |
+| --- | ---: |
+| Grupos elegidos dentro del rango ensayado | 6 |
+| Silhouette | 0.083076 |
+| Davies-Bouldin | 1.953043 |
+| Estaciones agrupadas | 424 |
+| Estaciones excluidas por perfil no elegible | 47 |
+
+El silhouette cercano a cero sugiere separación débil en el espacio de variables.
+No se afirma una segmentación operativa consolidada ni un óptimo global de k.
+
+## MLflow y evidencias
+
+Capturas revisadas:
+
+- [Lista de runs](tec-mlops-equipo-27/reports/figures/mlflow_01_runs.png).
+- [Detalle: parámetros, métricas y etiquetas](tec-mlops-equipo-27/reports/figures/mlflow_02_detalle.png).
+- [Artefacto registrado](tec-mlops-equipo-27/reports/figures/mlflow_03_artefacto.png).
+- [Comparación de referencias de P1](tec-mlops-equipo-27/reports/figures/mlflow_04_comparacion.png).
+
+## Referencias
+
+Las referencias completas en formato APA 7 están en
+[la propuesta de arquitectura](tec-mlops-equipo-27/references/arquitectura.md#referencias-apa-7).
 
 - [MiBici: datos abiertos](https://mibici.net/es/datos-abiertos/).
 - [Cookiecutter Data Science](https://cookiecutter-data-science.drivendata.org/).
-- [ML Canvas](https://www.ml-canvas.com/).
 - [MLflow Tracking](https://mlflow.org/docs/latest/ml/tracking/).
 - [scikit-learn: evaluación de modelos](https://scikit-learn.org/stable/modules/model_evaluation.html).
+- [ML Canvas](https://www.ownml.co/).
 - [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow).
