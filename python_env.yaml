@@ -1,0 +1,7 @@
+python: "3.13.15"
+build_dependencies:
+  - pip
+  - setuptools
+  - wheel
+dependencies:
+  - "-r tec-mlops-equipo-27/requirements.txt"
