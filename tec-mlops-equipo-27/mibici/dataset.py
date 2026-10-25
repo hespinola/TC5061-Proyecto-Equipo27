@@ -7,6 +7,7 @@ o transformación requiere ``--actualizar-version`` y revisión del manifiesto.
 from contextlib import ExitStack
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import sqlite3
@@ -27,7 +28,9 @@ from mibici.config import (
     CABECERAS_DESCARGA,
     CHUNK_SIZE,
     DATA_MANIFEST_PATH,
+    EQUIPO,
     MESES,
+    MLFLOW_TRACKING_URI,
     OBSERVACION_FIN,
     OBSERVACION_INICIO,
     PORTAL_DATOS_URL,
@@ -354,11 +357,38 @@ def ingestar(
     return payload
 
 
+def registrar_ingesta_en_mlflow(resultado: dict, manifest_path=DATA_MANIFEST_PATH) -> None:
+    """Registra la versión de datos en el run creado por ``mlflow run . -e ingest``."""
+    import mlflow
+
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    # start_run() retoma el run del proyecto indicado en MLFLOW_RUN_ID.
+    with mlflow.start_run():
+        mlflow.set_tags(
+            {
+                "equipo": EQUIPO,
+                "stage_of_work": "ingest",
+                "data_version": resultado["data_version"],
+            }
+        )
+        mlflow.log_metrics(
+            {
+                k: v
+                for k, v in resultado["resumen"].items()
+                if isinstance(v, (int, float)) and not isinstance(v, bool)
+            }
+        )
+        # Solo hashes, conteos y fuentes; los viajes no se suben a MLflow.
+        mlflow.log_artifact(str(manifest_path), artifact_path="data")
+
+
 @app.command()
 def main(actualizar_version: bool = False):
     """Descarga, normaliza y verifica la versión de los datos configurados."""
     resultado = ingestar(actualizar_version=actualizar_version)
     logger.success(f"Datos: {resultado['data_version']} | {resultado['resumen']}")
+    if os.environ.get("MLFLOW_RUN_ID"):
+        registrar_ingesta_en_mlflow(resultado)
 
 
 if __name__ == "__main__":
