@@ -57,6 +57,8 @@ Python y `make` de este documento se ejecutan desde ese subdirectorio.
 ```text
 tec-mlops-equipo-27/                 # Raíz del repositorio Git
 ├── README.md                       # Este documento
+├── MLproject                       # MLflow Project: puntos de entrada ingest y train
+├── python_env.yaml                 # Entorno del proyecto (mismas versiones fijas)
 ├── .gitignore
 └── tec-mlops-equipo-27/             # Proyecto generado con ccds
     ├── README.md                   # Acceso a documentación y ejecución
@@ -95,11 +97,9 @@ Los ejemplos usan macOS/Linux y `make`. Se verificó `pip check` sin conflictos
 en el entorno de ejecución del equipo; las dependencias principales tienen
 versiones fijas en `requirements.txt`.
 
-Mientras la implementación está en revisión, clonar su rama publicada:
-
 ```bash
-git clone https://github.com/hespinola/tec-mlops-equipo-27.git
-cd tec-mlops-equipo-27/tec-mlops-equipo-27
+git clone https://github.com/hespinola/TC5061-Proyecto-Equipo27.git
+cd TC5061-Proyecto-Equipo27/tec-mlops-equipo-27
 
 python3.13 -m venv .venv
 source .venv/bin/activate
@@ -108,8 +108,8 @@ python -m pip check
 ```
 
 La configuración local de tracking se puede personalizar mediante `.env`, siguiendo
-`.env.example`. Para reproducir el flujo local descrito, usar el valor por defecto
-de `MLFLOW_TRACKING_URI`, sin configurar un servidor externo.
+`.env.example`. Por defecto, `MLFLOW_TRACKING_URI` apunta al servidor local
+`http://127.0.0.1:5000` (ver [MLflow Project](#mlflow-project-y-servidor-de-tracking)).
 
 ## Ejecución reproducible
 
@@ -118,8 +118,8 @@ de `MLFLOW_TRACKING_URI`, sin configurar un servidor externo.
 | Pruebas locales | `make test` | `python -m unittest discover -s tests -v` |
 | Ingesta y verificación de datos | `make data` | `python -m mibici.dataset` |
 | Panel y variables | `make features` | `python -m mibici.preparar` |
-| Cuatro runs de baselines | `make baseline` | `python -m mibici.modeling.train` |
-| UI local de MLflow | `make tracking` | `python -m mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000` |
+| Baselines (run padre + 4 nested runs) | `make baseline` | `python -m mibici.modeling.train` |
+| Servidor de tracking y UI | `make tracking` | `python -m mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000` |
 
 Orden de ejecución:
 
@@ -142,6 +142,109 @@ un run con un commit que no describe su implementación.
 La ingesta y los baselines se ejecutan sin descargas manuales, ediciones de CSV ni
 dependencia de un notebook. Repetir los baselines crea nuevos IDs de run y fechas;
 se comparan versión de datos, configuración y métricas, no esos identificadores.
+
+## MLflow Project y servidor de tracking
+
+A partir de la segunda entrega, **todas las corridas se lanzan con `mlflow run`**
+desde la raíz del repositorio, no desde un notebook.
+
+### 1. Servidor de tracking con base de datos
+
+El Model Registry requiere un almacenamiento respaldado por base de datos. En una
+terminal aparte, desde `tec-mlops-equipo-27/`:
+
+```bash
+make tracking
+# equivale a:
+mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
+```
+
+La UI queda en [http://127.0.0.1:5000](http://127.0.0.1:5000). `mlflow.db`,
+`mlruns/` y `mlartifacts/` están en `.gitignore` y no se versionan.
+
+En la terminal donde se ejecutan las corridas:
+
+```bash
+export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+export MLFLOW_EXPERIMENT_NAME=mibici-equipo27
+```
+
+`MLFLOW_EXPERIMENT_NAME` hace que `mlflow run` cree cada corrida en el experimento
+del equipo (equivale a `--experiment-name mibici-equipo27`). Si falta, `train` se
+detiene con un mensaje en lugar de registrar en `Default`.
+
+### 2. Entorno del proyecto
+
+`MLproject` declara `python_env.yaml` (Python 3.13 y las mismas versiones fijas de
+`requirements.txt`; `tests/test_mlproject.py` falla si dejan de coincidir). MLflow
+crea ese entorno de forma aislada con `--env-manager uv` (requiere `pip install uv`)
+o `--env-manager virtualenv` (requiere `pyenv`). Con `--env-manager local` se usa el
+entorno virtual activo, útil durante el desarrollo.
+
+### 3. Comandos desde un clon limpio
+
+Desde la raíz del repositorio y con el servidor activo:
+
+```bash
+# Ingesta: descarga, verifica el manifiesto y lo registra como artefacto data/.
+mlflow run . -e ingest --env-manager uv
+
+# Los cuatro baselines (P1 168 h y 24 h, P2, P3) como nested runs de un run padre.
+mlflow run . -e train --env-manager uv -P question=all
+
+# Una pregunta y un modelo; los hiperparámetros no indicados salen de config.py.
+mlflow run . -e train --env-manager uv -P question=p1 -P model=baseline -P rezago_horas=24
+mlflow run . -e train --env-manager uv -P question=p3 -P n_clusters=4
+```
+
+El entrenamiento exige el código confirmado en Git (incluidos `MLproject` y
+`python_env.yaml`). Los comandos del modelo elegido de cada pregunta se agregan
+aquí al cerrar la experimentación.
+
+### 4. Parámetros del punto de entrada `train`
+
+| Parámetro | Valor por defecto | Uso |
+| --- | --- | --- |
+| `question` | `all` | `p1`, `p2`, `p3` o `all` (los cuatro baselines). |
+| `model` | `config` → `baseline` | Modelo registrado en `config.HIPERPARAMETROS`. |
+| `stage_of_work` | `config` → `baseline` o `candidate` | Etiqueta para filtrar: `baseline`, `search`, `candidate`. |
+| `rezago_horas` | `config` → 168 | P1 baseline: 24 o 168. |
+| `n_clusters` | `config` → `None` | P3: k fijo; `none` elige k por silhouette. |
+| `n_estimators`, `max_depth`, `learning_rate` | `config` | Reservados para los modelos candidatos. |
+
+El valor `config` es un centinela: `MLproject` no puede importar Python, así que
+`train.py` lo sustituye por el valor de `mibici/config.py`. Así, rutas, fechas,
+semillas e hiperparámetros por defecto se definen en un solo lugar. Un
+hiperparámetro que no aplica al modelo elegido es un error, para no registrar
+corridas con valores ignorados.
+
+En la UI, los parámetros sin prefijo (`n_clusters = config`) muestran lo que se
+pidió; los de prefijo `hp_` (`hp_n_clusters = 4`) son los valores efectivos.
+
+### 5. Etiquetas y artefactos de cada corrida
+
+Etiquetas: `equipo`, `question`, `pregunta`, `model`, `model_family`,
+`stage_of_work`, `git_commit` y `data_version`; MLflow agrega
+`mlflow.source.git.commit` y el punto de entrada.
+
+| Carpeta | Contenido |
+| --- | --- |
+| `config/` | `run_config.json` (pregunta, modelo, hiperparámetros, partición, semilla) y `entorno.json` (versiones). |
+| `data/` | `data_manifest.json`: hashes, conteos y fuentes; nunca viajes ni datos personales. |
+| `plots/` | Gráficas de desempeño de la tarea. |
+| `results/` | Resumen y selección de umbral o de grupos. |
+
+El conjunto de entrenamiento se registra con `mlflow.log_input` (esquema y digest,
+sin subir filas).
+
+### 6. Cómo agregar un modelo candidato
+
+1. En `mibici/config.py`, agregar el modelo y sus hiperparámetros por defecto a
+   `HIPERPARAMETROS[pregunta]` y su familia a `FAMILIA_MODELO`.
+2. En `mibici/modeling/train.py`, escribir la función `entrenar_...(panel, tarea)`,
+   que registra en el run activo, y añadirla a `ENTRENADORES`.
+3. Si usa un hiperparámetro nuevo, declararlo en `MLproject` y en `train.main`
+   con valor por defecto `config` (la prueba `test_mlproject` verifica que coincidan).
 
 ### Variables originales y tratamiento
 
