@@ -1,6 +1,6 @@
 # Proyecto MiBici · Equipo 27
 
-**TC5061 · Primera entrega del proyecto integrador**
+**TC5061 · Proyecto integrador · Entregas 1 y 2**
 
 Propuesta y base reproducible de Machine Learning para analizar la demanda, el
 desequilibrio de flujo y los patrones de uso de estaciones de MiBici, el sistema
@@ -11,6 +11,18 @@ La implementación procesó **4,497,119 viajes válidos**, construyó un panel d
 La ingesta se ejecutó dos veces con la misma versión de datos.
 
 La estructura se generó con Cookiecutter Data Science y su módulo se llama `mibici`.
+
+## Resultados de la segunda entrega
+
+- [Reporte PDF de partes B y C](output/pdf/TC5061_Reporte_MLFlow_Equipo27.pdf).
+- [Reporte editable con tablas y evidencia](tec-mlops-equipo-27/reports/reporte_mlflow.md).
+- [Resultados de experimentación](tec-mlops-equipo-27/reports/experiment_results.json).
+- [Registry y verificación de carga por alias](tec-mlops-equipo-27/reports/registry_results.json).
+- [Validación ejecutada y límites](tec-mlops-equipo-27/references/validacion-entrega2.md).
+
+Las ramas y los textos de los PR están preparados localmente; su publicación,
+revisión e integración siguen pendientes. Los tres modelos `champion` se
+verificaron en el MLflow local de esta tarea.
 
 ## Documentos y evidencias
 
