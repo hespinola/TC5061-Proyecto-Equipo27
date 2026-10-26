@@ -90,8 +90,8 @@ def ejemplo_modelo(uri):
     model = mlflow.models.Model.load(uri)
     if not model.signature or not model.saved_input_example_info:
         raise ValueError("Modelo sin firma o ejemplo de entrada.")
-    path = mlflow.artifacts.download_artifacts(f"{uri}/input_example.json")
-    example = json.loads(Path(path).read_text())
+    root = Path(mlflow.artifacts.download_artifacts(uri))
+    example = json.loads((root / model.saved_input_example_info["artifact_path"]).read_text())
     return pd.DataFrame(example["data"], columns=example["columns"])
 
 

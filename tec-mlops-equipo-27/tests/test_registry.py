@@ -1,9 +1,14 @@
 """La selección ignora prueba y aplica reglas explícitas de estabilidad/desempate."""
 
 import copy
+import json
+from pathlib import Path
+import tempfile
+from types import SimpleNamespace
+from unittest.mock import patch
 import unittest
 
-from mibici.modeling.registry import seleccionar
+from mibici.modeling.registry import ejemplo_modelo, seleccionar
 
 
 def row(question, name, value, **metrics):
@@ -17,6 +22,17 @@ def row(question, name, value, **metrics):
 
 
 class RegistryTests(unittest.TestCase):
+    def test_ejemplo_descarga_uri_completo_de_logged_model(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "input_example.json").write_text(json.dumps({"columns": ["x"], "data": [[1.0]]}))
+            model = SimpleNamespace(signature=True, saved_input_example_info={"artifact_path": "input_example.json"})
+            with patch("mlflow.models.Model.load", return_value=model), patch(
+                "mlflow.artifacts.download_artifacts", return_value=tmp
+            ) as download:
+                example = ejemplo_modelo("models:/m-abc")
+                download.assert_called_once_with("models:/m-abc")
+            self.assertEqual(example.x.tolist(), [1.0])
+
     def test_prueba_no_cambia_modelo_elegido(self):
         for q in ("p1", "p2", "p3"):
             rows = [row(q, "a", 0.6), row(q, "b", 0.3)]
