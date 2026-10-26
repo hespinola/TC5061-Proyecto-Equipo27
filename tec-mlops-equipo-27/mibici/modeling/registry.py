@@ -173,12 +173,7 @@ def promover(client, row, report, criterion, registry_commit):
     # Validar versión antes de mover el alias vigente.
     actual = mlflow.pyfunc.load_model(f"models:/{name}/{number}").predict(X)
     np.testing.assert_allclose(actual, expected, rtol=1e-12, atol=1e-12)
-    try:
-        previous = client.get_model_version_by_alias(name, "champion").version
-    except mlflow.exceptions.MlflowException as exc:
-        if exc.error_code != "RESOURCE_DOES_NOT_EXIST":
-            raise
-        previous = None
+    previous = client.get_registered_model(name).aliases.get("champion")
     client.set_registered_model_alias(name, "champion", number)
     uri = f"models:/{name}@champion"
     try:
