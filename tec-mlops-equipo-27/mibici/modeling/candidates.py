@@ -42,6 +42,7 @@ def guardar_modelo(model, X, resultado):
     output = model.predict(example)
     info = mlflow.sklearn.log_model(
         model,
+        serialization_format="cloudpickle",
         name="model",
         input_example=example,
         signature=mlflow.models.infer_signature(example, output),
