@@ -1,0 +1,35 @@
+# MLflow Project del equipo 27: https://mlflow.org/docs/latest/ml/projects/
+# Ejecutar desde la raíz del repositorio, con el servidor de tracking activo:
+#   mlflow run . -e ingest --env-manager uv --experiment-name mibici-equipo27
+#   mlflow run . -e train  --env-manager uv --experiment-name mibici-equipo27 -P question=p1
+#
+# Los valores "config" se sustituyen en train.py por los de mibici/config.py
+# (rutas, fechas, semillas e hiperparámetros por defecto viven solo ahí).
+name: mibici-equipo27
+
+python_env: python_env.yaml
+
+entry_points:
+  ingest:
+    command: "cd tec-mlops-equipo-27 && python -m mibici.dataset"
+
+  train:
+    parameters:
+      question: {type: string, default: all}        # p1, p2, p3 o all (los cuatro baselines)
+      model: {type: string, default: config}        # modelo definido en config.HIPERPARAMETROS
+      stage_of_work: {type: string, default: config} # baseline, search o candidate
+      rezago_horas: {type: string, default: config} # P1 baseline: 24 o 168
+      n_clusters: {type: string, default: config}   # P3: k fijo; none = elegir por silhouette
+      n_estimators: {type: string, default: config}
+      max_depth: {type: string, default: config}
+      learning_rate: {type: string, default: config}
+    command: >-
+      cd tec-mlops-equipo-27 && python -m mibici.modeling.train
+      --question {question}
+      --model {model}
+      --stage-of-work {stage_of_work}
+      --rezago-horas {rezago_horas}
+      --n-clusters {n_clusters}
+      --n-estimators {n_estimators}
+      --max-depth {max_depth}
+      --learning-rate {learning_rate}

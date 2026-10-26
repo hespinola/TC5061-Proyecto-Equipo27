@@ -111,9 +111,51 @@ OBSERVACION_FIN = f"{_anio + (_mes == 12):04d}-{_mes % 12 + 1:02d}-01"
 # MLflow Tracking
 # ---------------------------------------------------------------------------
 MLFLOW_EXPERIMENT_NAME = "mibici-equipo27"
-# Por defecto, una base SQLite local (excluida de Git). Se puede cambiar con la
-# variable de entorno MLFLOW_TRACKING_URI en un archivo .env.
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", f"sqlite:///{PROJ_ROOT / 'mlflow.db'}")
+# El Model Registry requiere un almacenamiento respaldado por base de datos, por eso
+# el equipo usa un servidor local de tracking con SQLite (``make tracking``):
+#   mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
+# mlflow.db y mlartifacts/ quedan fuera de Git. Se puede cambiar con la variable de
+# entorno MLFLOW_TRACKING_URI (o en .env, siguiendo .env.example).
+MLFLOW_SERVER_HOST = "127.0.0.1"
+MLFLOW_SERVER_PORT = 5000
+MLFLOW_TRACKING_URI = os.getenv(
+    "MLFLOW_TRACKING_URI", f"http://{MLFLOW_SERVER_HOST}:{MLFLOW_SERVER_PORT}"
+)
+
+# ---------------------------------------------------------------------------
+# MLflow Project: valores por defecto del punto de entrada ``train``
+# ---------------------------------------------------------------------------
+# El archivo MLproject no puede importar Python. Para no repetir valores, sus
+# parámetros usan este centinela y train.py lo sustituye por lo definido aquí.
+VALOR_DESDE_CONFIG = "config"
+PREGUNTAS = ("p1", "p2", "p3")
+MODELO_POR_DEFECTO = "baseline"
+ETAPAS_DE_TRABAJO = ("baseline", "search", "candidate")
+
+# Modelos admitidos por pregunta y sus hiperparámetros por defecto. Para agregar un
+# modelo: registrar aquí su nombre y valores, e implementar su función en
+# ``mibici.modeling.train.ENTRENADORES``. ``None`` significa "elegir con el
+# criterio documentado" (por ejemplo, k por silhouette en P3).
+HIPERPARAMETROS = {
+    "p1": {
+        # Referencia histórica: misma hora de la semana (168 h) o del día anterior (24 h).
+        "baseline": {"rezago_horas": max(REZAGOS_HORAS)},
+    },
+    "p2": {
+        # Frecuencia de positivos por estación y hora; umbral elegido en validación.
+        "baseline": {},
+    },
+    "p3": {
+        # K-Means sobre perfiles de entrenamiento; k por silhouette si n_clusters es None.
+        "baseline": {"n_clusters": None},
+    },
+}
+# Familia de cada modelo, para la etiqueta ``model_family`` de MLflow.
+FAMILIA_MODELO = {
+    ("p1", "baseline"): "referencia-historica",
+    ("p2", "baseline"): "frecuencia-historica",
+    ("p3", "baseline"): "kmeans",
+}
 
 # If tqdm is installed, configure loguru with tqdm.write
 # https://github.com/Delgan/loguru/issues/135
