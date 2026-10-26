@@ -230,6 +230,13 @@ def registrar_contexto(tarea: Tarea, panel, etapa: str):
             **{f"hp_{k}": v for k, v in tarea.hiperparametros.items()},
         }
     )
+    for path in (
+        PROJ_ROOT / "mibici/config.py",
+        PROJ_ROOT / "requirements.txt",
+        PROJ_ROOT.parent / "MLproject",
+        PROJ_ROOT.parent / "python_env.yaml",
+    ):
+        mlflow.log_artifact(str(path), artifact_path="config")
     mlflow.log_dict(
         {p: version(p) for p in ("pandas", "numpy", "pyarrow", "scikit-learn", "mlflow")},
         "config/entorno.json",
@@ -482,10 +489,15 @@ def evaluar_p3(panel, tarea: Tarea):
 
 
 # (pregunta, modelo) -> función. Los modelos nuevos se agregan aquí y en config.py.
+from mibici.modeling.candidates import completar_baseline, evaluar_candidato
+
 ENTRENADORES = {
     ("p1", "baseline"): evaluar_p1,
     ("p2", "baseline"): evaluar_p2,
     ("p3", "baseline"): evaluar_p3,
+    ("p1", "hgb"): evaluar_candidato,
+    ("p2", "hgb"): evaluar_candidato,
+    ("p3", "pca_kmeans"): evaluar_candidato,
 }
 
 
@@ -494,39 +506,18 @@ def ejecutar_tarea(tarea: Tarea, panel, etapa: str):
     if entrenador is None:
         raise ValueError(f"{tarea.pregunta}/{tarea.modelo} está en config.py sin implementación.")
     registrar_contexto(tarea, panel, etapa)
+    inicio_tarea = time.perf_counter()
     resultado = entrenador(panel, tarea)
+    if tarea.modelo == "baseline":
+        completar_baseline(panel, tarea, resultado)
+    resultado["metricas"]["run_seconds"] = time.perf_counter() - inicio_tarea
+    mlflow.log_metric("run_seconds", resultado["metricas"]["run_seconds"])
     resultado["run_id"] = mlflow.active_run().info.run_id
     mlflow.log_dict(resultado, "results/resumen.json")
     return resultado
 
 
-@app.command()
-def main(
-    question: str = typer.Option("all", help="p1, p2, p3 o all (los cuatro baselines)."),
-    model: str = typer.Option(VALOR_DESDE_CONFIG, help="Modelo definido en config.py."),
-    stage_of_work: str = typer.Option(VALOR_DESDE_CONFIG, help="baseline, search o candidate."),
-    rezago_horas: str = typer.Option(VALOR_DESDE_CONFIG, help="P1 baseline: 24 o 168."),
-    n_clusters: str = typer.Option(VALOR_DESDE_CONFIG, help="P3: k fijo; none = silhouette."),
-    n_estimators: str = typer.Option(VALOR_DESDE_CONFIG, help="Modelos de ensamble."),
-    max_depth: str = typer.Option(
-        VALOR_DESDE_CONFIG, help="Profundidad máxima; none = sin límite."
-    ),
-    learning_rate: str = typer.Option(VALOR_DESDE_CONFIG, help="Gradient boosting."),
-):
-    """Entrena los modelos pedidos y los registra en el experimento del equipo."""
-    valores = {
-        "rezago_horas": rezago_horas,
-        "n_clusters": n_clusters,
-        "n_estimators": n_estimators,
-        "max_depth": max_depth,
-        "learning_rate": learning_rate,
-    }
-    # Validar parámetros, Git y experimento antes del procesamiento costoso.
-    tareas = planear_tareas(question, model, valores)
-    etapa = resolver_etapa(stage_of_work, tareas)
-    commit = informacion_codigo()
-    preparar_experimento()
-    inicio = time.perf_counter()
+def cargar_panel(commit):
     manifest = verificar_datos()
     # Reconstruir para no reutilizar un panel obsoleto respecto a código o datos.
     panel = preparar()
@@ -541,8 +532,43 @@ def main(
         "inicio": manifest["inicio"],
         "fin_exclusivo": manifest["fin_exclusivo"],
     }
+    return panel
+
+
+@app.command()
+def main(
+    question: str = typer.Option("all", help="p1, p2, p3 o all (los cuatro baselines)."),
+    model: str = typer.Option(VALOR_DESDE_CONFIG, help="Modelo definido en config.py."),
+    stage_of_work: str = typer.Option(VALOR_DESDE_CONFIG, help="baseline, search o candidate."),
+    rezago_horas: str = typer.Option(VALOR_DESDE_CONFIG, help="P1 baseline: 24 o 168."),
+    n_clusters: str = typer.Option(VALOR_DESDE_CONFIG, help="P3: k fijo; none = silhouette."),
+    n_estimators: str = typer.Option(VALOR_DESDE_CONFIG, help="Modelos de ensamble."),
+    max_depth: str = typer.Option(
+        VALOR_DESDE_CONFIG, help="Profundidad máxima; none = sin límite."
+    ),
+    learning_rate: str = typer.Option(VALOR_DESDE_CONFIG, help="Gradient boosting."),
+    n_components: str = typer.Option(VALOR_DESDE_CONFIG, help="Dimensiones PCA de P3."),
+):
+    """Entrena los modelos pedidos y los registra en el experimento del equipo."""
+    valores = {
+        "rezago_horas": rezago_horas,
+        "n_clusters": n_clusters,
+        "n_estimators": n_estimators,
+        "max_depth": max_depth,
+        "learning_rate": learning_rate,
+        "n_components": n_components,
+    }
+    # Validar parámetros, Git y experimento antes del procesamiento costoso.
+    tareas = planear_tareas(question, model, valores)
+    etapa = resolver_etapa(stage_of_work, tareas)
+    commit = informacion_codigo()
+    preparar_experimento()
+    inicio = time.perf_counter()
+    panel = cargar_panel(commit)
+    manifest = verificar_datos()
     # Con mlflow run, start_run() retoma el run creado por el proyecto (MLFLOW_RUN_ID).
     with mlflow.start_run() as padre:
+        os.environ.pop("MLFLOW_RUN_ID", None)
         if len(tareas) == 1:
             resultados = [ejecutar_tarea(tareas[0], panel, etapa)]
         else:
@@ -572,7 +598,7 @@ def main(
     if question.strip().lower() == "all":
         # Resultado de referencia versionado en Git desde la primera entrega.
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-        (REPORTS_DIR / "baseline_results.json").write_text(json.dumps(reporte, indent=2) + "\n")
+        (REPORTS_DIR / "baseline_replay.json").write_text(json.dumps(reporte, indent=2) + "\n")
     print(json.dumps(reporte, indent=2))
 
 
