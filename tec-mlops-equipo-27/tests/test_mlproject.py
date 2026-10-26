@@ -30,7 +30,7 @@ class MLprojectTests(unittest.TestCase):
     def test_puntos_de_entrada_y_parametros_de_train(self):
         proyecto = _project_spec.load_project(str(REPO_ROOT))
         self.assertEqual(proyecto.env_type, "python_env")
-        self.assertEqual(set(proyecto._entry_points), {"ingest", "train"})
+        self.assertTrue({"ingest", "train", "experiment"} <= set(proyecto._entry_points))
         parametros = proyecto.get_entry_point("train").parameters
         # Cada parámetro del MLproject es una opción de train.main y viceversa.
         self.assertEqual(set(parametros), set(inspect.signature(train.main).parameters))

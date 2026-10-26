@@ -23,6 +23,7 @@ entry_points:
       n_estimators: {type: string, default: config}
       max_depth: {type: string, default: config}
       learning_rate: {type: string, default: config}
+      n_components: {type: string, default: config}
     command: >-
       cd tec-mlops-equipo-27 && python -m mibici.modeling.train
       --question {question}
@@ -33,3 +34,11 @@ entry_points:
       --n-estimators {n_estimators}
       --max-depth {max_depth}
       --learning-rate {learning_rate}
+      --n-components {n_components}
+
+  experiment:
+    parameters:
+      question: {type: string, default: all}
+    command: >-
+      cd tec-mlops-equipo-27 && python -m mibici.modeling.experiment
+      --question {question}

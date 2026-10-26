@@ -368,3 +368,57 @@ Las referencias completas en formato APA 7 están en
 - [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow).
 - [OpenAI](https://chatgpt.com)
 - [Claude](https://claude.ai)
+## Entrega 2 · Parte B: experimentación y artefactos
+
+Desde la raíz Git, con el entorno fijo instalado y el servidor anterior activo:
+
+```bash
+export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+export MLFLOW_EXPERIMENT_NAME=mibici-equipo27
+mlflow run . -e ingest --env-manager local
+mlflow run . -e experiment --env-manager local
+# Una sola pregunta (genera un resumen solo para esa pregunta):
+mlflow run . -e experiment --env-manager local -P question=p1
+# Una combinación individual:
+mlflow run . -e train --env-manager local -P question=p1 -P model=hgb -P n_estimators=100 -P max_depth=6 -P learning_rate=0.1
+mlflow run . -e train --env-manager local -P question=p3 -P model=pca_kmeans -P n_clusters=4 -P n_components=8
+```
+
+`--env-manager local` utiliza el entorno activado con las versiones fijas de
+`requirements.txt`; `--env-manager uv` permite que MLflow cree el entorno declarado
+en `python_env.yaml`. Ambos ejecutan los mismos puntos de entrada. Confirmar los
+cambios de código en Git antes de entrenar: cada corrida exige un commit limpio.
+
+`experiment` repite los cuatro baselines sin reemplazar el reporte histórico y
+comprueba sus métricas contra `reports/baseline_results.json` con tolerancia
+numérica de 1e-9. Reconstruye el panel desde los Parquet cuyos hashes verifica el
+manifiesto de la primera entrega. No cambia la versión de datos ni los cortes.
+Los nuevos IDs se vinculan a los IDs originales en `baseline_parity`.
+
+En `mibici-equipo27`, la jerarquía es: corrida del Project, baseline por referencia,
+una corrida `search-pN` por búsqueda y tres hijas candidatas por pregunta. Filtrar
+por `question`, `model_family`, `stage_of_work`, `equipo`, `git_commit` y
+`data_version`. P1/P2 prueban boosting de histogramas con 60/100/160 iteraciones,
+profundidades 4/6/8 y tasas 0.1/0.1/0.08, sin early stopping aleatorio. P3 prueba
+PCA (8 componentes) + K-Means (3/4/6 grupos). Todo se ajusta solo con train.
+
+Cada baseline y candidata incluye un modelo cargable con firma y ejemplo numérico,
+`config/` (configuración efectiva, fuentes de configuración y dependencias),
+`data/data_manifest.json`, `plots/` y `results/`. `log_input` registra esquema y
+digest de los agregados; no sube los viajes. P2 conserva el umbral que maximiza F1
+de validación en el objeto desplegable; `predict` devuelve alertas 0/1 y
+`predict_proba` permite priorizar por probabilidad.
+
+P1 mantiene MAE/RMSE; P2 mantiene precisión, recall, F1 y AP y la purga de ventanas
+que cruzan cortes. Para P3 se conserva silhouette/Davies-Bouldin en las 50 variables
+escaladas con train, incluso al ajustar PCA. Se añaden validación/prueba temporal
+sobre estaciones presentes en train, ARI entre periodos y ARI de tres semillas.
+Estos diagnósticos amplían la primera entrega sin sustituir sus métricas de train.
+La desviación de resultados semanales P1/P2 es descriptiva, sin asumir filas iid.
+Se miden tiempo de ajuste, tamaño serializado y latencia por fila (mediana de tres
+predicciones, lote de hasta 1,000 filas, después de calentamiento).
+
+El resumen se guarda en `tec-mlops-equipo-27/reports/experiment_results.json` y como
+artefacto de la corrida Project. Repetir `experiment` completo antes del registro
+para que el resumen contenga las tres preguntas. Datos, base SQLite, artefactos
+MLflow y estimadores serializados permanecen excluidos de Git.

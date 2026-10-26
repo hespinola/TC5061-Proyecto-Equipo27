@@ -157,6 +157,58 @@ FAMILIA_MODELO = {
     ("p3", "baseline"): "kmeans",
 }
 
+# Parte B: búsquedas acotadas, sobre todo el entrenamiento (sin submuestreo).
+FEATURES_P1 = (
+    "hora_del_dia",
+    "dia_semana",
+    "es_fin_de_semana",
+    "mes",
+    "hora_sin",
+    "hora_cos",
+    "dia_sin",
+    "dia_cos",
+    "salidas_rezago_24",
+    "salidas_rezago_168",
+    "salidas_media_24",
+    "salidas_media_168",
+    "llegadas_rezago_24",
+    "llegadas_rezago_168",
+    "llegadas_media_24",
+    "llegadas_media_168",
+)
+FEATURES_P2 = FEATURES_P1 + ("capacidad", "flujo_acumulado_dia_rel")
+HIPERPARAMETROS["p1"]["hgb"] = {"n_estimators": 100, "max_depth": 6, "learning_rate": 0.1}
+HIPERPARAMETROS["p2"]["hgb"] = {"n_estimators": 100, "max_depth": 6, "learning_rate": 0.1}
+HIPERPARAMETROS["p3"]["pca_kmeans"] = {"n_clusters": 4, "n_components": 8}
+FAMILIA_MODELO.update(
+    {
+        ("p1", "hgb"): "hist-gradient-boosting",
+        ("p2", "hgb"): "hist-gradient-boosting",
+        ("p3", "pca_kmeans"): "pca-kmeans",
+    }
+)
+BUSQUEDAS = {
+    "p1": [
+        ("hgb", {"n_estimators": n, "max_depth": d, "learning_rate": lr})
+        for n, d, lr in ((60, 4, 0.1), (100, 6, 0.1), (160, 8, 0.08))
+    ],
+    "p2": [
+        ("hgb", {"n_estimators": n, "max_depth": d, "learning_rate": lr})
+        for n, d, lr in ((60, 4, 0.1), (100, 6, 0.1), (160, 8, 0.08))
+    ],
+    "p3": [("pca_kmeans", {"n_clusters": k, "n_components": 8}) for k in (3, 4, 6)],
+}
+SEMILLAS_ESTABILIDAD = (SEED, SEED + 1, SEED + 2)
+# Selección solo en validación; costos desempatan diferencias de hasta 1% (P1/P2)
+# o 0.005 puntos de silhouette (P3). Prueba nunca entra en la clave de selección.
+METRICA_SELECCION = {
+    "p1": "validation_mae",
+    "p2": "validation_average_precision",
+    "p3": "validation_silhouette",
+}
+TOLERANCIA_SELECCION = {"p1": 0.01, "p2": 0.01, "p3": 0.005}
+RESULTADOS_EXPERIMENTOS_PATH = REPORTS_DIR / "experiment_results.json"
+
 # If tqdm is installed, configure loguru with tqdm.write
 # https://github.com/Delgan/loguru/issues/135
 try:
