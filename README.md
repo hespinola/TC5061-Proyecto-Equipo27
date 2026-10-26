@@ -120,7 +120,7 @@ en el entorno de ejecución del equipo; las dependencias principales tienen
 versiones fijas en `requirements.txt`.
 
 ```bash
-git clone https://github.com/hespinola/tec-mlops-equipo-27.git
+git clone https://github.com/hespinola/TC5061-Proyecto-Equipo27.git tec-mlops-equipo-27
 cd tec-mlops-equipo-27
 # Mientras B y C no estén integradas en main:
 git switch feat/mlflow-experiments
@@ -136,7 +136,7 @@ cd ..
 En Windows PowerShell, desde la carpeta donde se alojará el clon:
 
 ```powershell
-git clone https://github.com/hespinola/tec-mlops-equipo-27.git
+git clone https://github.com/hespinola/TC5061-Proyecto-Equipo27.git tec-mlops-equipo-27
 Set-Location tec-mlops-equipo-27
 # Mientras B y C no estén integradas en main:
 git switch feat/mlflow-experiments
