@@ -20,9 +20,11 @@ La estructura se generó con Cookiecutter Data Science y su módulo se llama `mi
 - [Registry y verificación de carga por alias](tec-mlops-equipo-27/reports/registry_results.json).
 - [Validación ejecutada y límites](tec-mlops-equipo-27/references/validacion-entrega2.md).
 
-Las ramas y los textos de los PR están preparados localmente; su publicación,
-revisión e integración siguen pendientes. Los tres modelos `champion` se
-verificaron en el MLflow local de esta tarea.
+La parte A está integrada en `main` mediante el PR #10. La parte C se integró
+en `feat/mlflow-experiments` mediante el PR #12; la incorporación de B y C a
+`main` sigue pendiente en el estado revisado el 25 de octubre de 2026.
+Los tres modelos `champion` se verificaron en el servidor MLflow de la ejecución
+documentada; sus artefactos y base de tracking no se incluyen en Git.
 
 ## Documentos y evidencias
 
@@ -64,12 +66,14 @@ los cruces intermedios del umbral y no permite afirmar ahorros operativos.
 ## Estructura real del repositorio
 
 El proyecto generado está **un nivel dentro del repositorio**. Los comandos de
-Python y `make` de este documento se ejecutan desde ese subdirectorio.
+pruebas Python se ejecutan desde ese subdirectorio. Los comandos `mlflow run`
+y el servidor de tracking de esta guía se ejecutan desde la raíz Git, donde
+está `MLproject`.
 
 ```text
 tec-mlops-equipo-27/                 # Raíz del repositorio Git
 ├── README.md                       # Este documento
-├── MLproject                       # MLflow Project: puntos de entrada ingest y train
+├── MLproject                       # ingest, train, experiment y register
 ├── python_env.yaml                 # Entorno del proyecto (mismas versiones fijas)
 ├── .gitignore
 └── tec-mlops-equipo-27/             # Proyecto generado con ccds
@@ -88,11 +92,17 @@ tec-mlops-equipo-27/                 # Raíz del repositorio Git
     │   ├── preparar.py             # Agregación por bloques y construcción del panel
     │   ├── features.py             # Funciones reutilizables por pregunta
     │   └── modeling/
-    │       └── train.py            # Baselines, evaluación y MLflow
+    │       ├── train.py            # Baselines, evaluación y MLflow
+    │       ├── candidates.py       # Candidatas, modelos y diagnósticos
+    │       ├── experiment.py       # Baselines y búsquedas anidadas
+    │       └── registry.py         # Selección, registro y alias champion
     ├── notebooks/                  # Exploración
     ├── references/                 # Manifiesto, arquitectura y guía de evidencias
     ├── reports/
     │   ├── baseline_results.json   # Métricas e IDs de runs
+    │   ├── experiment_results.json # Baselines y nueve candidatas
+    │   ├── registry_results.json   # Modelos, linaje y verificación por alias
+    │   ├── reporte_mlflow.md       # Reporte de partes B y C
     │   ├── resultados_base.md      # Interpretación
     │   └── figures/                # Gráficas y capturas seleccionadas
     ├── models/                    # Modelos locales, excluidos de Git
@@ -105,48 +115,60 @@ La plantilla también conserva archivos auxiliares y carpetas para documentació
 ## Instalación
 
 Requisitos: **Python 3.13**, Git, acceso HTTPS a MiBici y un entorno virtual.
-Los ejemplos usan macOS/Linux y `make`. Se verificó `pip check` sin conflictos
+Se incluyen ejemplos para macOS/Linux y Windows PowerShell. Se verificó `pip check` sin conflictos
 en el entorno de ejecución del equipo; las dependencias principales tienen
 versiones fijas en `requirements.txt`.
 
 ```bash
-git clone https://github.com/hespinola/TC5061-Proyecto-Equipo27.git
-cd TC5061-Proyecto-Equipo27/tec-mlops-equipo-27
+git clone https://github.com/hespinola/TC5061-Proyecto-Equipo27.git tec-mlops-equipo-27
+cd tec-mlops-equipo-27
+# Mientras B y C no estén integradas en main:
+git switch feat/mlflow-experiments
 
 python3.13 -m venv .venv
 source .venv/bin/activate
+cd tec-mlops-equipo-27
 python -m pip install -r requirements.txt
 python -m pip check
+cd ..
 ```
+
+En Windows PowerShell, desde la carpeta donde se alojará el clon:
+
+```powershell
+git clone https://github.com/hespinola/TC5061-Proyecto-Equipo27.git tec-mlops-equipo-27
+Set-Location tec-mlops-equipo-27
+# Mientras B y C no estén integradas en main:
+git switch feat/mlflow-experiments
+py -3.13 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+Set-Location tec-mlops-equipo-27
+python -m pip install -r requirements.txt
+python -m pip check
+Set-Location ..
+```
+
+Ambas secuencias terminan en la raíz Git con el entorno activado. Después de
+integrar B y C en `main`, se puede omitir el cambio a la rama de experimentación.
 
 La configuración local de tracking se puede personalizar mediante `.env`, siguiendo
 `.env.example`. Por defecto, `MLFLOW_TRACKING_URI` apunta al servidor local
 `http://127.0.0.1:5000` (ver [MLflow Project](#mlflow-project-y-servidor-de-tracking)).
 
-## Ejecución reproducible
+## Pruebas y ejecución reproducible
 
-| Acción | Comando | Equivalente Python |
-| --- | --- | --- |
-| Pruebas locales | `make test` | `python -m unittest discover -s tests -v` |
-| Ingesta y verificación de datos | `make data` | `python -m mibici.dataset` |
-| Panel y variables | `make features` | `python -m mibici.preparar` |
-| Baselines (run padre + 4 nested runs) | `make baseline` | `python -m mibici.modeling.train` |
-| Servidor de tracking y UI | `make tracking` | `python -m mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000` |
-
-Orden de ejecución:
+Para ejecutar las pruebas desde la raíz Git con el entorno activado:
 
 ```bash
-make test
-make data
-make data
-make features
-make baseline
-make tracking
+cd tec-mlops-equipo-27
+python -m unittest discover -s tests -v
+cd ..
 ```
 
-La segunda ingesta debe reproducir el manifiesto fijado. `make baseline` verifica
-los Parquet y reconstruye el panel antes de evaluar, por lo que `make features` es
-una etapa de inspección útil pero no necesita repetirse manualmente para entrenar.
+Para reproducir B y C, seguir las tres primeras secciones de la guía MLflow:
+iniciar el servidor, configurar el entorno y ejecutar `ingest`, `experiment`
+y `register`, en ese orden. La experimentación verifica los Parquet y reconstruye
+el panel antes de evaluar; no requiere generar las variables manualmente.
 El entrenamiento exige que el código esté confirmado en Git; si hay cambios en
 `mibici/`, `requirements.txt` o `pyproject.toml`, se detiene para evitar etiquetar
 un run con un commit que no describe su implementación.
@@ -163,22 +185,31 @@ desde la raíz del repositorio, no desde un notebook.
 ### 1. Servidor de tracking con base de datos
 
 El Model Registry requiere un almacenamiento respaldado por base de datos. En una
-terminal aparte, desde `tec-mlops-equipo-27/`:
+terminal aparte, desde la raíz Git (la carpeta que contiene `MLproject`),
+con el mismo entorno virtual activado:
 
 ```bash
-make tracking
-# equivale a:
 mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
 ```
 
 La UI queda en [http://127.0.0.1:5000](http://127.0.0.1:5000). `mlflow.db`,
 `mlruns/` y `mlartifacts/` están en `.gitignore` y no se versionan.
+Mantener esa terminal abierta. La ruta SQLite es relativa al directorio desde
+el que se inicia el servidor; usar siempre la misma ubicación para consultar
+las corridas y modelos de esa ejecución.
 
 En la terminal donde se ejecutan las corridas:
 
 ```bash
 export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
 export MLFLOW_EXPERIMENT_NAME=mibici-equipo27
+```
+
+En PowerShell, usar estas asignaciones en lugar de `export`:
+
+```powershell
+$env:MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
+$env:MLFLOW_EXPERIMENT_NAME = "mibici-equipo27"
 ```
 
 `MLFLOW_EXPERIMENT_NAME` hace que `mlflow run` cree cada corrida en el experimento
@@ -195,23 +226,24 @@ entorno virtual activo, útil durante el desarrollo.
 
 ### 3. Comandos desde un clon limpio
 
-Desde la raíz del repositorio y con el servidor activo:
+Desde la raíz del repositorio, con el entorno instalado activado, las variables
+anteriores definidas y el servidor activo (los comandos sirven en Bash y PowerShell):
 
 ```bash
 # Ingesta: descarga, verifica el manifiesto y lo registra como artefacto data/.
-mlflow run . -e ingest --env-manager uv
+mlflow run . -e ingest --env-manager local
 
-# Los cuatro baselines (P1 168 h y 24 h, P2, P3) como nested runs de un run padre.
-mlflow run . -e train --env-manager uv -P question=all
+# Cuatro baselines y nueve candidatas, con búsquedas anidadas.
+mlflow run . -e experiment --env-manager local
 
-# Una pregunta y un modelo; los hiperparámetros no indicados salen de config.py.
-mlflow run . -e train --env-manager uv -P question=p1 -P model=baseline -P rezago_horas=24
-mlflow run . -e train --env-manager uv -P question=p3 -P n_clusters=4
+# Selección y registro de los tres modelos con alias champion.
+mlflow run . -e register --env-manager local
 ```
 
 El entrenamiento exige el código confirmado en Git (incluidos `MLproject` y
-`python_env.yaml`). Los comandos del modelo elegido de cada pregunta se agregan
-aquí al cerrar la experimentación.
+`python_env.yaml`). Los comandos individuales de los modelos elegidos están en
+[la parte C](#entrega-2--parte-c-selección-y-model-registry). Ejecutar `train`
+individualmente no sustituye el resumen completo que necesita `register`.
 
 ### 4. Parámetros del punto de entrada `train`
 
@@ -222,7 +254,8 @@ aquí al cerrar la experimentación.
 | `stage_of_work` | `config` → `baseline` o `candidate` | Etiqueta para filtrar: `baseline`, `search`, `candidate`. |
 | `rezago_horas` | `config` → 168 | P1 baseline: 24 o 168. |
 | `n_clusters` | `config` → `None` | P3: k fijo; `none` elige k por silhouette. |
-| `n_estimators`, `max_depth`, `learning_rate` | `config` | Reservados para los modelos candidatos. |
+| `n_estimators`, `max_depth`, `learning_rate` | `config` | Iteraciones, profundidad y tasa de aprendizaje de HGB en P1/P2. |
+| `n_components` | `config` → 8 | Componentes de PCA en P3 con `model=pca_kmeans`. |
 
 El valor `config` es un centinela: `MLproject` no puede importar Python, así que
 `train.py` lo sustituye por el valor de `mibici/config.py`. Así, rutas, fechas,
@@ -306,16 +339,18 @@ distinto. La escala y los perfiles de P3 se ajustan únicamente con entrenamient
 Flujo: **fuentes → ingesta/validación → Parquet + manifiesto → panel y variables →
 partición temporal → evaluación → MLflow → resultados y evidencias**.
 
-| Pregunta | Baseline ejecutado | Candidato propuesto | Métricas |
+| Pregunta | Baseline ejecutado | Candidatas evaluadas | Métricas |
 | --- | --- | --- | --- |
 | P1 | Misma hora de la semana anterior; referencia adicional del día anterior. | Gradient boosting con variables históricas y validación temporal. | MAE en viajes/estación/hora y RMSE para complementar errores grandes. |
-| P2 | Frecuencia de positivos por estación y hora en train; respaldo global de train para combinaciones nuevas. Umbral elegido en validación por máximo F1 y desempates por recall/precision. | Regresión logística o gradient boosting. | Precision, recall, F1, average precision y prevalencia. |
-| P3 | Perfiles elegibles de train, StandardScaler y K-Means; k entre 2 y 6 por silhouette. | Clustering jerárquico sobre las mismas variables y escala. | Silhouette, Davies-Bouldin, tamaños e interpretación de grupos. |
+| P2 | Frecuencia de positivos por estación y hora en train; respaldo global de train para combinaciones nuevas. Umbral elegido en validación por máximo F1 y desempates por recall/precision. | Tres configuraciones de HistGradientBoostingClassifier. | Precision, recall, F1, average precision y prevalencia. |
+| P3 | Perfiles elegibles de train, StandardScaler y K-Means; k entre 2 y 6 por silhouette. | PCA de ocho componentes + K-Means con k=3/4/6. | Silhouette, Davies-Bouldin, tamaños e interpretación de grupos. |
 
-Los modelos candidatos son parte de la propuesta; **no se presentan como entrenados**.
-Las coordenadas de P3 se reservan para visualizar el mapa. La elección de k en
-train no equivale a medir desempeño supervisado en test; el estudio de estabilidad
-entre semillas/periodos queda para una entrega posterior.
+Las nueve candidatas y los cuatro baselines repetidos están documentados en
+`reports/experiment_results.json`, dentro del subdirectorio del proyecto.
+Las coordenadas de P3 se reservan para visualizar el mapa. La parte B incorpora
+estabilidad entre semillas y periodos; la comparación y las limitaciones se
+explican en el reporte de la segunda entrega. Las tablas siguientes conservan
+los resultados de los baselines de la primera entrega.
 
 
 ### P1 · Evaluación por estación y hora
@@ -485,12 +520,24 @@ Ejemplo de consumo, con un DataFrame que cumpla la firma registrada:
 
 ```python
 import mlflow
+import os
+
+mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
 model = mlflow.pyfunc.load_model("models:/mibici-equipo27-p1-demanda@champion")
 predictions = model.predict(X)
 # P2: sklearn permite predict_proba; predict conserva el umbral de validación.
 risk = mlflow.sklearn.load_model("models:/mibici-equipo27-p2-riesgo@champion")
 probabilities = risk.predict_proba(X_risk)[:, 1]
+# P3: perfiles de estaciones con las columnas de la firma del modelo.
+groups = mlflow.pyfunc.load_model("models:/mibici-equipo27-p3-grupos@champion")
+labels = groups.predict(X_profiles)
 ```
+
+`X`, `X_risk` y `X_profiles` representan DataFrames preparados previamente con
+las columnas y tipos de la firma de cada modelo; no son viajes crudos ni son
+intercambiables entre preguntas. La firma y el ejemplo de entrada se pueden
+consultar en el modelo registrado en la UI de MLflow. Ejecutar el ejemplo con
+el entorno del proyecto y `MLFLOW_TRACKING_URI` definido para ese servidor.
 
 El resultado verificable queda en `reports/registry_results.json`. Las bases de
 tracking y modelos son locales; un profesor que clone el repositorio debe repetir
@@ -499,12 +546,20 @@ se comparan métricas, hashes, parámetros y comportamiento, no IDs locales.
 
 ### Flujo de integración de esta entrega
 
-1. PR de Dani: `feat/mlflow-project` hacia `main` (parte A).
-2. PR B: `feat/mlflow-experiments` hacia `feat/mlflow-project`.
-3. PR C: `feat/mlflow-registry` hacia `feat/mlflow-experiments`.
+Estado revisado el 25 de octubre de 2026:
 
-Después de integrar la base de cada PR se actualiza su destino a `main`, sin
-fusionar los PR sin revisión. No se añaden commits ni revisiones a nombre de otros
+1. Parte A: integrada en `main` mediante el PR #10.
+2. Parte C: integrada en `feat/mlflow-experiments` mediante el PR #12.
+3. Partes B y C: pendientes de integración conjunta desde
+   `feat/mlflow-experiments` hacia `main`.
+
+Las mejoras documentales de `docs/mlflow-registry` parten de
+`feat/mlflow-experiments` y deben revisarse contra esa base mientras no esté
+integrada en `main`. Después de integrar B y C, actualizar la base del PR de
+documentación a `main` y comprobar su diff. No fusionar los PR sin revisión.
+No se añaden commits ni revisiones a nombre de otros
 integrantes: cada persona debe abrir y revisar al menos un PR desde su cuenta.
-Consultar los textos preparados en `references/PR-parte-B.md` y
-`references/PR-parte-C.md`; las capturas y el reporte documentan evidencia local.
+Los textos originales de PR y la validación local en
+`tec-mlops-equipo-27/references/` conservan el contexto de su preparación;
+sus notas de publicación pendiente no describen el estado actual de integración.
+Las capturas y el reporte documentan la ejecución local original.
