@@ -1,0 +1,80 @@
+{
+  "fecha_utc": "2026-10-26T00:33:45.626734+00:00",
+  "registry_commit": "24e7852b25a16292b4967009a60c515a0ff43ee2",
+  "source_commit": "9cd40eb0af9feed8bcbf6048a74292e04b8709c2",
+  "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+  "registry_run_id": "39e56e8397a744138f03d57715ce5d45",
+  "models": [
+    {
+      "name": "mibici-equipo27-p1-demanda",
+      "version": "1",
+      "alias": "champion",
+      "uri": "models:/mibici-equipo27-p1-demanda@champion",
+      "run_id": "683b78f7fe9643be9b7496a77c951e58",
+      "model_uri": "models:/m-e1de7c54c2b34622b72882cf2ba33c65",
+      "source_commit": "9cd40eb0af9feed8bcbf6048a74292e04b8709c2",
+      "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+      "load_by_alias_verified": true,
+      "prediction_parity_verified": true,
+      "example_rows": 5,
+      "selection": {
+        "metric": "validation_mae",
+        "best_validation_value": 0.7192116820951295,
+        "tolerance": 0.007192116820951296,
+        "near_tie_run_ids": [
+          "d78849fea1ff4bf6a8dcceafddb3658d",
+          "683b78f7fe9643be9b7496a77c951e58"
+        ],
+        "test_used_for_selection": false,
+        "tie_break": "menor dispersi\u00f3n MAE semanal; menor tama\u00f1o"
+      }
+    },
+    {
+      "name": "mibici-equipo27-p2-riesgo",
+      "version": "1",
+      "alias": "champion",
+      "uri": "models:/mibici-equipo27-p2-riesgo@champion",
+      "run_id": "8f8989795a434fb8960b4f4ce13fa9cb",
+      "model_uri": "models:/m-6138e4d2555045b0b55387b1895055ce",
+      "source_commit": "9cd40eb0af9feed8bcbf6048a74292e04b8709c2",
+      "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+      "load_by_alias_verified": true,
+      "prediction_parity_verified": true,
+      "example_rows": 5,
+      "selection": {
+        "metric": "validation_average_precision",
+        "best_validation_value": 0.31471020225677526,
+        "tolerance": 0.0031471020225677525,
+        "near_tie_run_ids": [
+          "8f8989795a434fb8960b4f4ce13fa9cb"
+        ],
+        "test_used_for_selection": false,
+        "tie_break": "mayor recall; mayor F1; menor tama\u00f1o"
+      }
+    },
+    {
+      "name": "mibici-equipo27-p3-grupos",
+      "version": "1",
+      "alias": "champion",
+      "uri": "models:/mibici-equipo27-p3-grupos@champion",
+      "run_id": "5a0f7131eee545758051e4411542af0e",
+      "model_uri": "models:/m-c0b57881c8c14a46a0c9af9780e1afdc",
+      "source_commit": "9cd40eb0af9feed8bcbf6048a74292e04b8709c2",
+      "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+      "load_by_alias_verified": true,
+      "prediction_parity_verified": true,
+      "example_rows": 5,
+      "selection": {
+        "metric": "validation_silhouette",
+        "best_validation_value": -0.04190607531437444,
+        "tolerance": 0.005,
+        "near_tie_run_ids": [
+          "dbb49c8668454ec88eb5e4909a1399b9",
+          "5a0f7131eee545758051e4411542af0e"
+        ],
+        "test_used_for_selection": false,
+        "tie_break": "mayor ARI m\u00ednimo entre semillas; ARI temporal; menor tama\u00f1o"
+      }
+    }
+  ]
+}
