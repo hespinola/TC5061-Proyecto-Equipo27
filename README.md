@@ -465,6 +465,14 @@ no dependa del número de versión ni de las etapas clásicas obsoletas. Nombres
 - `models:/mibici-equipo27-p2-riesgo@champion`
 - `models:/mibici-equipo27-p3-grupos@champion`
 
+Para reproducir los modelos elegidos de esta ejecución desde la raíz:
+
+```bash
+mlflow run . -e train --env-manager local -P question=p1 -P model=hgb -P n_estimators=160 -P max_depth=8 -P learning_rate=0.08
+mlflow run . -e train --env-manager local -P question=p2 -P model=hgb -P n_estimators=160 -P max_depth=8 -P learning_rate=0.08
+mlflow run . -e train --env-manager local -P question=p3 -P model=pca_kmeans -P n_clusters=4 -P n_components=8
+```
+
 Cada versión conserva descripción, experimento, corrida origen, commit del
 entrenamiento, commit del registro y versión SHA-256 de datos. Primero se carga
 por versión y se compara su predicción con el modelo origen; después se mueve

@@ -59,8 +59,10 @@ cd TC5061-Proyecto-Equipo27
 git checkout feat/mlflow-registry
 python3.13 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r tec-mlops-equipo-27/requirements.txt
+cd tec-mlops-equipo-27
+python -m pip install -r requirements.txt
 python -m pip check
+cd ..
 ```
 
 En una terminal, desde la raíz del repositorio:
