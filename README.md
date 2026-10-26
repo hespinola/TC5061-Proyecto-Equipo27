@@ -422,3 +422,69 @@ El resumen se guarda en `tec-mlops-equipo-27/reports/experiment_results.json` y 
 artefacto de la corrida Project. Repetir `experiment` completo antes del registro
 para que el resumen contenga las tres preguntas. Datos, base SQLite, artefactos
 MLflow y estimadores serializados permanecen excluidos de Git.
+
+## Entrega 2 · Parte C: selección y Model Registry
+
+Después de `mlflow run . -e experiment` completo, ejecutar desde la raíz:
+
+```bash
+mlflow run . -e register --env-manager local
+```
+
+Se selecciona exclusivamente con validación: P1 minimiza MAE; P2 maximiza average
+precision (priorización de alertas con clase rara); P3 maximiza silhouette temporal
+en el espacio original escalado. Diferencias de hasta 1% relativo en P1/P2 o
+0.005 puntos en P3 se consideran casi empate: P1 prefiere menor dispersión del
+MAE semanal; P2 mayor recall, luego F1; P3 mayor ARI mínimo entre semillas, luego
+ARI temporal. El tamaño del modelo desempata lo anterior. Se reportan también
+costo de ajuste/latencia. La prueba no decide el modelo ni el umbral de P2.
+No se vuelve a ajustar con train+validation: se registra exactamente el estimador
+evaluado y se conserva el baseline cuando siga siendo la mejor alternativa.
+
+Antes de registrar se verifica que hay tres candidatas y baseline por pregunta,
+que los runs terminaron en el experimento correcto y que datos, commit, métricas,
+cortes, modelos e inputs coinciden con el resumen. Las candidatas deben tener un
+padre de búsqueda. Cambiar el JSON para inventar resultados provoca un error.
+
+Usamos aliases, recomendados en el flujo vigente de MLflow, para que el consumo
+no dependa del número de versión ni de las etapas clásicas obsoletas. Nombres:
+
+- `models:/mibici-equipo27-p1-demanda@champion`
+- `models:/mibici-equipo27-p2-riesgo@champion`
+- `models:/mibici-equipo27-p3-grupos@champion`
+
+Cada versión conserva descripción, experimento, corrida origen, commit del
+entrenamiento, commit del registro y versión SHA-256 de datos. Primero se carga
+por versión y se compara su predicción con el modelo origen; después se mueve
+`champion` y se vuelve a cargar por alias. Si falla esta última comprobación, se
+restaura el alias anterior. Una repetición reutiliza la versión de la misma corrida.
+`champion` identifica el modelo de producción académica local; esta entrega no
+levanta un servicio HTTP de predicción ni demuestra impacto en operación real.
+
+Ejemplo de consumo, con un DataFrame que cumpla la firma registrada:
+
+```python
+import mlflow
+model = mlflow.pyfunc.load_model("models:/mibici-equipo27-p1-demanda@champion")
+predictions = model.predict(X)
+# P2: sklearn permite predict_proba; predict conserva el umbral de validación.
+risk = mlflow.sklearn.load_model("models:/mibici-equipo27-p2-riesgo@champion")
+probabilities = risk.predict_proba(X_risk)[:, 1]
+```
+
+El resultado verificable queda en `reports/registry_results.json`. Las bases de
+tracking y modelos son locales; un profesor que clone el repositorio debe repetir
+ingesta, experimentación y registro para reconstruirlos. Los IDs nuevos cambiarán;
+se comparan métricas, hashes, parámetros y comportamiento, no IDs locales.
+
+### Flujo de integración de esta entrega
+
+1. PR de Dani: `feat/mlflow-project` hacia `main` (parte A).
+2. PR B: `feat/mlflow-experiments` hacia `feat/mlflow-project`.
+3. PR C: `feat/mlflow-registry` hacia `feat/mlflow-experiments`.
+
+Después de integrar la base de cada PR se actualiza su destino a `main`, sin
+fusionar los PR sin revisión. No se añaden commits ni revisiones a nombre de otros
+integrantes: cada persona debe abrir y revisar al menos un PR desde su cuenta.
+Consultar los textos preparados en `references/PR-parte-B.md` y
+`references/PR-parte-C.md`; las capturas y el reporte documentan evidencia local.

@@ -42,3 +42,10 @@ entry_points:
     command: >-
       cd tec-mlops-equipo-27 && python -m mibici.modeling.experiment
       --question {question}
+
+  register:
+    parameters:
+      results: {type: string, default: config}
+    command: >-
+      cd tec-mlops-equipo-27 && python -m mibici.modeling.registry
+      --results {results}
