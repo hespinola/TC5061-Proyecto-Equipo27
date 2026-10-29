@@ -13,4 +13,5 @@ ruff==0.17.1
 scikit-learn==1.9.1
 tqdm==4.70.1
 typer==0.27.3
+pytest==9.2.0
 -e .
