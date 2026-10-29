@@ -83,6 +83,19 @@ test:
 	$(PYTHON_INTERPRETER) -m unittest discover -s tests -v
 
 
+## Check Python code and tracked/pending files for security issues
+.PHONY: security security-code security-secrets
+security: security-code security-secrets
+
+## Scan application code and security scripts with Bandit
+security-code:
+	$(PYTHON_INTERPRETER) -m bandit -r mibici scripts
+
+## Reject new potential secrets without sending them to external services
+security-secrets:
+	$(PYTHON_INTERPRETER) scripts/check_secrets.py
+
+
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################
