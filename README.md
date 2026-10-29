@@ -563,3 +563,20 @@ Los textos originales de PR y la validación local en
 `tec-mlops-equipo-27/references/` conservan el contexto de su preparación;
 sus notas de publicación pendiente no describen el estado actual de integración.
 Las capturas y el reporte documentan la ejecución local original.
+
+## Entrega 3
+
+### Chequeos básicos de seguridad
+
+Desde la carpeta `tec-mlops-equipo-27`, con el entorno virtual activo:
+
+```bash
+python -m pip install -r requirements-security.txt
+make security
+```
+
+El comando ejecuta Bandit y detect-secrets. La detección de secretos revisa archivos versionados y nuevos archivos pendientes, sin enviar posibles credenciales a servicios externos.
+
+La baseline contiene únicamente hashes e identificadores de MLflow revisados como falsos positivos. Las excepciones de Bandit están limitadas y justificadas en las llamadas internas a Git.
+
+Los mismos chequeos se ejecutan automáticamente en cada push y pull request.
