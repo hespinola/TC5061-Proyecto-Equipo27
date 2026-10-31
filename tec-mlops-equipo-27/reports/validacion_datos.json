@@ -1,0 +1,114 @@
+{
+  "filas": {
+    "entrenamiento": 3085050,
+    "prueba": 688602
+  },
+  "umbrales": {
+    "nulos_max": 0.05,
+    "duplicados_max": 0.0,
+    "pps_max": 0.8,
+    "drift_max": 0.2,
+    "categorias_nuevas_max": 0.01
+  },
+  "suites": {
+    "integridad_entrenamiento": [
+      {
+        "chequeo": "PercentOfNulls",
+        "estado": "ok",
+        "detalle": "Passed for 19 relevant columns. Top columns with null ratio: \n{'salidas_rezago_24': '0.35%', 'salidas_rezago_168': '2.46%', 'salidas_media_24': '0.35%', 'salidas_media_168': '2.46%', 'llegadas_rezago_24': '0.35%'}"
+      },
+      {
+        "chequeo": "Mixed Nulls",
+        "estado": "ok",
+        "detalle": "Passed for 21 relevant columns"
+      },
+      {
+        "chequeo": "Mixed Data Types",
+        "estado": "ok",
+        "detalle": "21 columns passed: found 0 columns with negligible types mix, and 21 columns without any types mix"
+      },
+      {
+        "chequeo": "Single Value in Column",
+        "estado": "ok",
+        "detalle": "Passed for 21 relevant columns"
+      },
+      {
+        "chequeo": "Data Duplicates",
+        "estado": "ok",
+        "detalle": "Found 0% duplicate data"
+      },
+      {
+        "chequeo": "Feature Label Correlation",
+        "estado": "ok",
+        "detalle": "Passed for 19 relevant columns"
+      }
+    ],
+    "integridad_prueba": [
+      {
+        "chequeo": "PercentOfNulls",
+        "estado": "ok",
+        "detalle": "Passed for 19 relevant columns. Top columns with null ratio: \n{'capacidad': '0.43%', 'flujo_acumulado_dia_rel': '0.43%'}"
+      },
+      {
+        "chequeo": "Mixed Nulls",
+        "estado": "ok",
+        "detalle": "Passed for 21 relevant columns"
+      },
+      {
+        "chequeo": "Mixed Data Types",
+        "estado": "ok",
+        "detalle": "21 columns passed: found 0 columns with negligible types mix, and 21 columns without any types mix"
+      },
+      {
+        "chequeo": "Single Value in Column",
+        "estado": "ok",
+        "detalle": "Passed for 21 relevant columns"
+      },
+      {
+        "chequeo": "Data Duplicates",
+        "estado": "ok",
+        "detalle": "Found 0% duplicate data"
+      },
+      {
+        "chequeo": "Feature Label Correlation",
+        "estado": "ok",
+        "detalle": "Passed for 19 relevant columns"
+      }
+    ],
+    "entrenamiento_vs_prueba_p1": [
+      {
+        "chequeo": "Feature Drift",
+        "estado": "falla",
+        "detalle": "Failed for 4 out of 9 columns.\nFound 4 numeric columns with Kolmogorov-Smirnov above threshold: {'salidas_media_24': '0.2', 'salidas_media_168': '0.2', 'llegadas_media_24': '0.2', 'llegadas_media_168': '0.2'}"
+      },
+      {
+        "chequeo": "Date Train-Test Leakage (overlap)",
+        "estado": "ok",
+        "detalle": "No leaked dates found"
+      },
+      {
+        "chequeo": "New Category Train Test",
+        "estado": "ok",
+        "detalle": "Passed for 1 relevant feature"
+      },
+      {
+        "chequeo": "Label Drift",
+        "estado": "ok",
+        "detalle": "Label's drift score Kolmogorov-Smirnov is 0.07"
+      },
+      {
+        "chequeo": "Datasets Size Comparison",
+        "estado": "ok",
+        "detalle": ""
+      }
+    ],
+    "entrenamiento_vs_prueba_p2": [
+      {
+        "chequeo": "Label Drift",
+        "estado": "ok",
+        "detalle": "Label's drift score Cramer's V is 3.04E-3"
+      }
+    ]
+  },
+  "aprobado": false
+}
