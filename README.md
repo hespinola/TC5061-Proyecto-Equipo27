@@ -230,6 +230,26 @@ para NumPy 1 y scikit-learn < 1.6. `preparar_deepchecks()` restaura `np.Inf`,
 fallan con pandas 3 (`OutlierSampleDetection`, `TrainTestSamplesMix` y
 `MultivariateDrift`) no se usan.
 
+**Resultados sobre los datos reales** (`reports/validacion_datos.json`):
+3,085,050 filas de entrenamiento y 688,602 de prueba.
+
+- Integridad: todos los chequeos pasan en entrenamiento y en prueba (sin nulos
+  por encima del umbral, sin claves duplicadas, sin tipos mezclados ni fuga).
+- Particiones: sin traslape de fechas ni estaciones nuevas en prueba.
+- Objetivos: drift bajo (Kolmogorov-Smirnov 0.07 en P1; Cramér's V 0.003 en P2).
+- **Hallazgo:** drift en los cuatro promedios móviles de demanda
+  (`salidas_media_24`, `salidas_media_168`, `llegadas_media_24`,
+  `llegadas_media_168`), con Kolmogorov-Smirnov de 0.2, en el umbral. Los
+  rezagos simples no presentan drift. Es consistente con estacionalidad: prueba
+  (agosto y septiembre) cae en temporada de lluvias y regreso a clases, meses
+  que entrenamiento (octubre a junio) no incluye. Implica que el error en prueba
+  puede superar al de validación; se recomienda monitorear el drift y reentrenar
+  con datos recientes.
+
+![Pruebas de la validación](tec-mlops-equipo-27/reports/figures/deepchecks_pruebas.png)
+
+![Validación sobre los datos reales](tec-mlops-equipo-27/reports/figures/deepchecks_validacion.png)
+
 ## MLflow Project y servidor de tracking
 
 A partir de la segunda entrega, **todas las corridas se lanzan con `mlflow run`**
