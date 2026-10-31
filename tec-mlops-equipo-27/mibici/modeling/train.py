@@ -16,7 +16,10 @@ import hashlib
 from importlib.metadata import version
 import json
 import os
-import subprocess
+import shutil
+
+# Git se ejecuta sin shell y con argumentos internos.
+import subprocess  # nosec B404
 import time
 
 import matplotlib
@@ -168,8 +171,17 @@ def resolver_etapa(stage_of_work: str, tareas: list[Tarea]) -> str:
 # Reproducibilidad y MLflow
 # ---------------------------------------------------------------------------
 def informacion_codigo():
+    git_executable = shutil.which("git")
+    if git_executable is None:
+        raise FileNotFoundError("Git debe estar instalado para registrar la versión del código.")
+
     def git(*args):
-        return subprocess.check_output(["git", *args], cwd=PROJ_ROOT, text=True).strip()
+        # Los argumentos se definen abajo; no provienen de entradas del usuario.
+        command = [git_executable, *args]
+        output = subprocess.check_output(  # nosec B603
+            command, cwd=PROJ_ROOT, text=True, shell=False
+        )
+        return output.strip()
 
     commit = git("rev-parse", "HEAD")
     # Un run debe identificar exactamente código confirmado; el manifiesto sí puede
