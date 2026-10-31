@@ -177,6 +177,59 @@ La ingesta y los baselines se ejecutan sin descargas manuales, ediciones de CSV 
 dependencia de un notebook. Repetir los baselines crea nuevos IDs de run y fechas;
 se comparan versión de datos, configuración y métricas, no esos identificadores.
 
+### Validación de datos con DeepChecks (entrega 3)
+
+`mibici/validacion.py` revisa el panel `panel_estacion_hora.parquet` antes de
+entrenar. Compara entrenamiento (hasta `FIN_ENTRENAMIENTO`) contra prueba (después
+de `FIN_VALIDACION`), con las mismas fechas y la misma purga de ventanas de P2 que
+el modelado. Cada chequeo tiene una condición con umbral explícito en `UMBRALES`.
+
+| Suite | Chequeo de DeepChecks | Qué detecta | Condición |
+|---|---|---|---|
+| Integridad (entrenamiento y prueba) | `PercentOfNulls` | Valores faltantes por columna | ≤ 5 % (los rezagos de 168 h son nulos la primera semana de cada estación) |
+| | `MixedNulls` | Nulos codificados de formas distintas (`NaN`, `"NaN"`, `None`) | ≤ 1 tipo de nulo |
+| | `MixedDataTypes` | Columnas con números y texto mezclados | Sin mezcla del 1 al 10 % |
+| | `IsSingleValue` | Columnas constantes | Ninguna |
+| | `DataDuplicates` | Claves `estacion_id` x `periodo` repetidas | 0 % |
+| | `FeatureLabelCorrelation` | Fuga de información: una variable que por sí sola predice el objetivo | PPS < 0.8 |
+| Entrenamiento vs. prueba | `DateTrainTestLeakageOverlap` | Fechas de prueba anteriores al fin de entrenamiento | 0 % |
+| | `NewCategoryTrainTest` | Estaciones que solo aparecen en prueba | ≤ 1 % de las filas |
+| | `FeatureDrift` | Drift de rezagos, promedios móviles y capacidad | Kolmogorov-Smirnov < 0.2 |
+| | `LabelDrift` | Drift del objetivo de P1 (`salidas`) y de P2 (`objetivo_en_riesgo`) | < 0.2 |
+
+El drift se mide solo en variables de demanda. Las de calendario (`mes`, hora, día)
+cambian entre particiones por construcción, porque prueba cubre meses que
+entrenamiento no ve.
+
+Con los datos preparados (`make data` y `make features`), desde `tec-mlops-equipo-27/`:
+
+```bash
+make validate                          # equivale a python -m mibici.validacion
+python -m mibici.validacion --estricto # código de salida 1 si alguna condición falla
+```
+
+El comando imprime una línea por chequeo y guarda:
+
+- `reports/validacion_datos.json`: resumen versionado con el estado de cada chequeo.
+- `reports/deepchecks/*.html`: reportes completos con gráficas (fuera de Git por su tamaño).
+
+Las pruebas de `tests/test_validacion_datos.py` no requieren datos descargados:
+introducen cada problema en un panel sintético (nulos, nulos mezclados, tipos
+mezclados, columna constante, duplicados, fuga, drift de variables y objetivos,
+traslape de fechas y estaciones nuevas) y verifican que el chequeo correspondiente
+lo detecte, mientras que el panel limpio pasa todos.
+
+```bash
+python -m pytest tests/test_validacion_datos.py -v
+```
+
+**Compatibilidad.** DeepChecks 0.19.1 es la última versión publicada y se escribió
+para NumPy 1 y scikit-learn < 1.6. `preparar_deepchecks()` restaura `np.Inf`,
+`np.NaN` y el scorer `max_error` antes de importarla, y `requirements.txt` fija
+`setuptools==80.10.2` porque DeepChecks importa `pkg_resources`. Los chequeos que
+fallan con pandas 3 (`OutlierSampleDetection`, `TrainTestSamplesMix` y
+`MultivariateDrift`) no se usan.
+
 ## MLflow Project y servidor de tracking
 
 A partir de la segunda entrega, **todas las corridas se lanzan con `mlflow run`**

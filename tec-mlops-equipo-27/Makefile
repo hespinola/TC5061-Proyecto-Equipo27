@@ -67,6 +67,11 @@ data:
 features:
 	$(PYTHON_INTERPRETER) -m mibici.preparar
 
+## Validate panel quality, integrity and train/test drift with DeepChecks
+.PHONY: validate
+validate:
+	$(PYTHON_INTERPRETER) -m mibici.validacion
+
 ## Execute baselines P1, P2 and P3 and log runs in MLflow
 .PHONY: baseline
 baseline:
