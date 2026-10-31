@@ -703,8 +703,7 @@ de etiqueta de P2 y deberán reportarse y excluirse de su evaluación.
 
 ### Resultados de las pruebas:
 ````bash
-(venv) oscatorr@OSCATORR-M-4D72 tec-mlops-equipo-27 % python -m pytest
-============================================================================= test session starts =============================================================================
+(venv) tec-mlops-equipo-27 % python -m pytest
 platform darwin -- Python 3.13.15, pytest-9.2.0, pluggy-1.7.0
 rootdir: /Users/oscatorr/Documents/TEC/4to trimestre/ML Ops/tec-mlops-equipo-27/tec-mlops-equipo-27
 configfile: pyproject.toml
@@ -722,19 +721,31 @@ tests/test_registry.py .....                                                    
 tests/test_reproducibilidad.py ......                                                                                                                                   [ 75%]
 tests/test_utilidades_entrenamiento.py ........................................................                                                                         [100%]
 
-============================================================================== warnings summary ===============================================================================
 tests/test_reproducibilidad.py::test_misma_semilla_reproduce_metricas_y_predicciones[P1-hgb-42]
-  /Users/oscatorr/Documents/TEC/4to trimestre/ML Ops/tec-mlops-equipo-27/tec-mlops-equipo-27/venv/lib/python3.13/site-packages/mlflow/store/tracking/sqlalchemy_store.py:327: SADeprecationWarning: The ``noload`` loader strategy is deprecated and will be removed in a future release.  This option produces incorrect results by returning ``None`` for related items. (deprecated since: 2.1)
+  .../tec-mlops-equipo-27/tec-mlops-equipo-27/venv/lib/python3.13/site-packages/mlflow/store/tracking/sqlalchemy_store.py:327: SADeprecationWarning: The ``noload`` loader strategy is deprecated and will be removed in a future release.  This option produces incorrect results by returning ``None`` for related items. (deprecated since: 2.1)
     sqlalchemy.orm.configure_mappers()
 
 tests/test_reproducibilidad.py: 36 warnings
-  /Users/oscatorr/Documents/TEC/4to trimestre/ML Ops/tec-mlops-equipo-27/tec-mlops-equipo-27/venv/lib/python3.13/site-packages/mlflow/data/dataset_source_registry.py:148: UserWarning: The specified dataset source can be interpreted in multiple ways: LocalArtifactDatasetSource, LocalArtifactDatasetSource. MLflow will assume that this is a LocalArtifactDatasetSource source.
+  .../tec-mlops-equipo-27/tec-mlops-equipo-27/venv/lib/python3.13/site-packages/mlflow/data/dataset_source_registry.py:148: UserWarning: The specified dataset source can be interpreted in multiple ways: LocalArtifactDatasetSource, LocalArtifactDatasetSource. MLflow will assume that this is a LocalArtifactDatasetSource source.
     return _dataset_source_registry.resolve(
 
 tests/test_reproducibilidad.py: 36 warnings
-  /Users/oscatorr/Documents/TEC/4to trimestre/ML Ops/tec-mlops-equipo-27/tec-mlops-equipo-27/venv/lib/python3.13/site-packages/mlflow/data/digest_utils.py:29: Pandas4Warning:Starting with pandas version 4.0 all arguments of all will be keyword-only.
+  .../tec-mlops-equipo-27/tec-mlops-equipo-27/venv/lib/python3.13/site-packages/mlflow/data/digest_utils.py:29: Pandas4Warning:Starting with pandas version 4.0 all arguments of all will be keyword-only.
     string_columns = trimmed_df.columns[(df.map(type) == str).all(0)]
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-====================================================================== 231 passed, 73 warnings in 31.92s ======================================================================
-(venv) oscatorr@OSCATORR-M-4D72 tec-mlops-equipo-27 % 
+
+### Chequeos básicos de seguridad
+
+Desde la carpeta `tec-mlops-equipo-27`, con el entorno virtual activo:
+
+```bash
+python -m pip install -r requirements-security.txt
+make security
+```
+
+El comando ejecuta Bandit y detect-secrets. La detección de secretos revisa archivos versionados y nuevos archivos pendientes, sin enviar posibles credenciales a servicios externos.
+
+La baseline contiene únicamente hashes e identificadores de MLflow revisados como falsos positivos. Las excepciones de Bandit están limitadas y justificadas en las llamadas internas a Git.
+
+Los mismos chequeos se ejecutan automáticamente en cada push y pull request.
