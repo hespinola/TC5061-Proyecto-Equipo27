@@ -705,7 +705,7 @@ de etiqueta de P2 y deberán reportarse y excluirse de su evaluación.
 ````bash
 (venv) tec-mlops-equipo-27 % python -m pytest
 platform darwin -- Python 3.13.15, pytest-9.2.0, pluggy-1.7.0
-rootdir: /Users/oscatorr/Documents/TEC/4to trimestre/ML Ops/tec-mlops-equipo-27/tec-mlops-equipo-27
+rootdir: .../tec-mlops-equipo-27/tec-mlops-equipo-27
 configfile: pyproject.toml
 plugins: platformdirs-4.13.3, anyio-4.15.1
 collected 231 items                                                                                                                                                           
@@ -734,8 +734,10 @@ tests/test_reproducibilidad.py: 36 warnings
     string_columns = trimmed_df.columns[(df.map(type) == str).all(0)]
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+````
+### Parte 2. Validación de datos con DeepChecks
 
-### Chequeos básicos de seguridad
+### Parte 3. Chequeos básicos de seguridad
 
 Desde la carpeta `tec-mlops-equipo-27`, con el entorno virtual activo:
 
