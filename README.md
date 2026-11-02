@@ -177,79 +177,6 @@ La ingesta y los baselines se ejecutan sin descargas manuales, ediciones de CSV 
 dependencia de un notebook. Repetir los baselines crea nuevos IDs de run y fechas;
 se comparan versión de datos, configuración y métricas, no esos identificadores.
 
-### Validación de datos con DeepChecks (entrega 3)
-
-`mibici/validacion.py` revisa el panel `panel_estacion_hora.parquet` antes de
-entrenar. Compara entrenamiento (hasta `FIN_ENTRENAMIENTO`) contra prueba (después
-de `FIN_VALIDACION`), con las mismas fechas y la misma purga de ventanas de P2 que
-el modelado. Cada chequeo tiene una condición con umbral explícito en `UMBRALES`.
-
-| Suite | Chequeo de DeepChecks | Qué detecta | Condición |
-|---|---|---|---|
-| Integridad (entrenamiento y prueba) | `PercentOfNulls` | Valores faltantes por columna | ≤ 5 % (los rezagos de 168 h son nulos la primera semana de cada estación) |
-| | `MixedNulls` | Nulos codificados de formas distintas (`NaN`, `"NaN"`, `None`) | ≤ 1 tipo de nulo |
-| | `MixedDataTypes` | Columnas con números y texto mezclados | Sin mezcla del 1 al 10 % |
-| | `IsSingleValue` | Columnas constantes | Ninguna |
-| | `DataDuplicates` | Claves `estacion_id` x `periodo` repetidas | 0 % |
-| | `FeatureLabelCorrelation` | Fuga de información: una variable que por sí sola predice el objetivo | PPS < 0.8 |
-| Entrenamiento vs. prueba | `DateTrainTestLeakageOverlap` | Fechas de prueba anteriores al fin de entrenamiento | 0 % |
-| | `NewCategoryTrainTest` | Estaciones que solo aparecen en prueba | ≤ 1 % de las filas |
-| | `FeatureDrift` | Drift de rezagos, promedios móviles y capacidad | Kolmogorov-Smirnov < 0.2 |
-| | `LabelDrift` | Drift del objetivo de P1 (`salidas`) y de P2 (`objetivo_en_riesgo`) | < 0.2 |
-
-El drift se mide solo en variables de demanda. Las de calendario (`mes`, hora, día)
-cambian entre particiones por construcción, porque prueba cubre meses que
-entrenamiento no ve.
-
-Con los datos preparados (`make data` y `make features`), desde `tec-mlops-equipo-27/`:
-
-```bash
-make validate                          # equivale a python -m mibici.validacion
-python -m mibici.validacion --estricto # código de salida 1 si alguna condición falla
-```
-
-El comando imprime una línea por chequeo y guarda:
-
-- `reports/validacion_datos.json`: resumen versionado con el estado de cada chequeo.
-- `reports/deepchecks/*.html`: reportes completos con gráficas (fuera de Git por su tamaño).
-
-Las pruebas de `tests/test_validacion_datos.py` no requieren datos descargados:
-introducen cada problema en un panel sintético (nulos, nulos mezclados, tipos
-mezclados, columna constante, duplicados, fuga, drift de variables y objetivos,
-traslape de fechas y estaciones nuevas) y verifican que el chequeo correspondiente
-lo detecte, mientras que el panel limpio pasa todos.
-
-```bash
-python -m pytest tests/test_validacion_datos.py -v
-```
-
-**Compatibilidad.** DeepChecks 0.19.1 es la última versión publicada y se escribió
-para NumPy 1 y scikit-learn < 1.6. `preparar_deepchecks()` restaura `np.Inf`,
-`np.NaN` y el scorer `max_error` antes de importarla, y `requirements.txt` fija
-`setuptools==80.10.2` porque DeepChecks importa `pkg_resources`. Los chequeos que
-fallan con pandas 3 (`OutlierSampleDetection`, `TrainTestSamplesMix` y
-`MultivariateDrift`) no se usan.
-
-**Resultados sobre los datos reales** (`reports/validacion_datos.json`):
-3,085,050 filas de entrenamiento y 688,602 de prueba.
-
-- Integridad: todos los chequeos pasan en entrenamiento y en prueba (sin nulos
-  por encima del umbral, sin claves duplicadas, sin tipos mezclados ni fuga).
-- Particiones: sin traslape de fechas ni estaciones nuevas en prueba.
-- Objetivos: drift bajo (Kolmogorov-Smirnov 0.07 en P1; Cramér's V 0.003 en P2).
-- **Hallazgo:** drift en los cuatro promedios móviles de demanda
-  (`salidas_media_24`, `salidas_media_168`, `llegadas_media_24`,
-  `llegadas_media_168`), con Kolmogorov-Smirnov de 0.2, en el umbral. Los
-  rezagos simples no presentan drift. Es consistente con estacionalidad: prueba
-  (agosto y septiembre) cae en temporada de lluvias y regreso a clases, meses
-  que entrenamiento (octubre a junio) no incluye. Implica que el error en prueba
-  puede superar al de validación; se recomienda monitorear el drift y reentrenar
-  con datos recientes.
-
-![Pruebas de la validación](tec-mlops-equipo-27/reports/figures/deepchecks_pruebas.png)
-
-![Validación sobre los datos reales](tec-mlops-equipo-27/reports/figures/deepchecks_validacion.png)
-
 ## MLflow Project y servidor de tracking
 
 A partir de la segunda entrega, **todas las corridas se lanzan con `mlflow run`**
@@ -637,9 +564,21 @@ Los textos originales de PR y la validación local en
 sus notas de publicación pendiente no describen el estado actual de integración.
 Las capturas y el reporte documentan la ejecución local original.
 
-## Entrega 3 · Parte 1: Pruebas unitarias con PyTest
+## Entrega 3 · Pruebas, validación de datos y seguridad
 
-### Pruebas del proyecto
+Esta sección reúne las instrucciones y evidencias de las tres partes:
+
+- [Parte 1: pruebas unitarias con PyTest](#parte-1-pruebas-unitarias-con-pytest).
+- [Parte 2: validación de datos con DeepChecks](#parte-2-validación-de-datos-con-deepchecks).
+- [Parte 3: chequeos básicos de seguridad](#parte-3-chequeos-básicos-de-seguridad).
+
+Los comandos se ejecutan desde el subdirectorio `tec-mlops-equipo-27/`, con
+Python 3.13 y el entorno del proyecto activado. Las pruebas usan datos sintéticos;
+la validación del dataset real requiere haber generado el panel.
+
+### Parte 1. Pruebas unitarias con PyTest
+
+#### Pruebas del proyecto
 
 Esta carpeta contiene dos familias de pruebas que conviven y se ejecutan juntas:
 
@@ -653,7 +592,7 @@ Esta carpeta contiene dos familias de pruebas que conviven y se ejecutan juntas:
 Todas utilizan datos sintéticos y archivos temporales: no requieren viajes
 descargados, acceso a Internet ni un servidor de MLflow.
 
-### Requisitos
+#### Requisitos
 
 Con el entorno del proyecto instalado (Python 3.13):
 
@@ -667,7 +606,7 @@ python -m pytest --version
 `python_env.yaml` de la raíz del repositorio: `test_mlproject.py` verifica que ambos
 archivos coincidan.
 
-### Cómo ejecutar las pruebas
+#### Cómo ejecutar las pruebas
 
 Siempre desde `tec-mlops-equipo-27/` (la carpeta que contiene `tests/`):
 
@@ -686,15 +625,18 @@ python -m pytest --collect-only -q                           # lista las pruebas
 python -m unittest discover -s tests -v                      # solo las pruebas unittest (50)
 ```
 
-`make test` ejecuta únicamente la suite `unittest`. Resultado esperado de
-`python -m pytest`: **231 pruebas aprobadas**, de las cuales 50 son `unittest` y 181
-son de PyTest. En total tarda alrededor de 20 segundos. Las advertencias
+`make test` ejecuta únicamente la suite `unittest`. La ejecución documentada de
+la parte 1 registró **231 pruebas aprobadas**: 50 de `unittest` y 181 de PyTest,
+en alrededor de 20 segundos. La parte 2 añade 21 pruebas de validación de datos;
+el resultado de las 231 pruebas corresponde a la suite anterior a esa integración.
+Tras integrar las partes, ejecutar `python -m pytest` para verificar el conjunto
+completo. Las advertencias
 (`warnings`) que pueden aparecer proceden de MLflow y pandas dentro de
 `test_reproducibilidad.py`; no son fallos.
 
-### Qué cubre cada archivo de PyTest
+#### Qué cubre cada archivo de PyTest
 
-#### `test_procesamiento_datos.py` (60 pruebas): `mibici/dataset.py`
+##### `test_procesamiento_datos.py` (60 pruebas): `mibici/dataset.py`
 
 | Función | Casos normales | Casos límite |
 |---|---|---|
@@ -705,7 +647,7 @@ son de PyTest. En total tarda alrededor de 20 segundos. Las advertencias
 | `sha256_archivo` | Valores conocidos. | Archivo vacío y archivo mayor que un bloque de lectura. |
 | `detectar_codificacion` | UTF-8 con BOM y cp1252. | Archivo vacío y bytes que solo `latin-1` acepta. |
 
-#### `test_feature_engineering.py` (59 pruebas): `mibici/features.py`
+##### `test_feature_engineering.py` (59 pruebas): `mibici/features.py`
 
 | Función | Casos normales | Casos límite |
 |---|---|---|
@@ -715,7 +657,7 @@ son de PyTest. En total tarda alrededor de 20 segundos. Las advertencias
 | `construir_objetivo_riesgo` | Flujo futuro, etiquetas de ambas direcciones y cierre de ventana calculados a mano. | Umbral inclusivo, cola incompleta en NA, capacidad en 0, negativa, nula o infinita, estaciones sin mezclar, umbral inválido y umbral igual a 1, horizonte inválido, columnas ausentes. |
 | `filtrar_periodo` | Fechas extremas inclusivas. | Sin límites, límites abiertos, rango invertido, resultado vacío, purga de ventanas que cruzan el corte, ventanas incompletas, `col_fin_objetivo` sin `fin`, columna inexistente. |
 
-#### `test_utilidades_entrenamiento.py` (56 pruebas): `mibici/modeling/`
+##### `test_utilidades_entrenamiento.py` (56 pruebas): `mibici/modeling/`
 
 | Función o clase | Casos normales | Casos límite |
 |---|---|---|
@@ -728,7 +670,7 @@ son de PyTest. En total tarda alrededor de 20 segundos. Las advertencias
 | `cluster_scores` | Grupos bien separados. | Un solo grupo, un grupo por punto, una sola muestra: la partición colapsada se marca. |
 | `LagRegressor`, `FrequencyClassifier`, `ThresholdClassifier` | Predicciones y probabilidades. | Rezago con NA, columna ausente, estación u hora no vista, umbral en 0, en 1 y por encima de 1. |
 
-#### `test_reproducibilidad.py` (6 pruebas): reproducibilidad del entrenamiento
+##### `test_reproducibilidad.py` (6 pruebas): reproducibilidad del entrenamiento
 
 Entrena **dos veces** el código real de `mibici.modeling.candidates` con la misma
 semilla y comprueba que las métricas de calidad y las predicciones de los dos modelos
@@ -741,7 +683,7 @@ que no escribe en el repositorio.
 python -m pytest tests/test_reproducibilidad.py -v
 ```
 
-### Verificación del módulo de variables (unittest)
+#### Verificación del módulo de variables (unittest)
 
 Las pruebas `unittest` incluyen una ejecución real del comando
 `python -m mibici.features` con entradas y salida Parquet. Se verifican los conteos del
@@ -749,7 +691,7 @@ panel, horas sin viajes, estaciones sin nomenclatura, capacidades inválidas, un
 multiplicación de registros, independencia entre estaciones, rezagos, ventanas móviles,
 acumulado diario y límites temporales.
 
-### Uso del corte temporal de P2
+#### Uso del corte temporal de P2
 
 Construir primero las variables sobre el historial completo, para conservar el
 contexto anterior a validación y prueba. Después filtrar cada partición:
@@ -774,14 +716,16 @@ Al entrenar, seleccionar explícitamente los predictores: los conteos `salidas`,
 en las variables de entrada de P1 ni de P2. Las filas sin capacidad válida carecen
 de etiqueta de P2 y deberán reportarse y excluirse de su evaluación.
 
-### Resultados de las pruebas:
+#### Evidencia de ejecución de la parte 1
+
+Transcripción de la ejecución documentada antes de incorporar DeepChecks:
 ````bash
 (venv) tec-mlops-equipo-27 % python -m pytest
 platform darwin -- Python 3.13.15, pytest-9.2.0, pluggy-1.7.0
 rootdir: .../tec-mlops-equipo-27/tec-mlops-equipo-27
 configfile: pyproject.toml
 plugins: platformdirs-4.13.3, anyio-4.15.1
-collected 231 items                                                                                                                                                           
+collected 231 items
 
 tests/test_baselines.py ...                                                                                                                                             [  1%]
 tests/test_dataset.py ............                                                                                                                                      [  6%]
@@ -809,6 +753,82 @@ tests/test_reproducibilidad.py: 36 warnings
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ````
 ### Parte 2. Validación de datos con DeepChecks
+
+`mibici/validacion.py` revisa el panel `panel_estacion_hora.parquet` antes de
+entrenar. Compara entrenamiento (hasta `FIN_ENTRENAMIENTO`) contra prueba (después
+de `FIN_VALIDACION`), con las mismas fechas y la misma purga de ventanas de P2 que
+el modelado. Cada chequeo tiene una condición con umbral explícito en `UMBRALES`.
+
+| Suite | Chequeo de DeepChecks | Qué detecta | Condición |
+|---|---|---|---|
+| Integridad (entrenamiento y prueba) | `PercentOfNulls` | Valores faltantes por columna | ≤ 5 % (los rezagos de 168 h son nulos la primera semana de cada estación) |
+| | `MixedNulls` | Nulos codificados de formas distintas (`NaN`, `"NaN"`, `None`) | ≤ 1 tipo de nulo |
+| | `MixedDataTypes` | Columnas con números y texto mezclados | Sin mezcla del 1 al 10 % |
+| | `IsSingleValue` | Columnas constantes | Ninguna |
+| | `DataDuplicates` | Claves `estacion_id` x `periodo` repetidas | 0 % |
+| | `FeatureLabelCorrelation` | Fuga de información: una variable que por sí sola predice el objetivo | PPS < 0.8 |
+| Entrenamiento vs. prueba | `DateTrainTestLeakageOverlap` | Fechas de prueba anteriores al fin de entrenamiento | 0 % |
+| | `NewCategoryTrainTest` | Estaciones que solo aparecen en prueba | ≤ 1 % de las filas |
+| | `FeatureDrift` | Drift de rezagos, promedios móviles y capacidad | Kolmogorov-Smirnov < 0.2 |
+| | `LabelDrift` | Drift del objetivo de P1 (`salidas`) y de P2 (`objetivo_en_riesgo`) | < 0.2 |
+
+El drift se mide solo en variables de demanda. Las de calendario (`mes`, hora, día)
+cambian entre particiones por construcción, porque prueba cubre meses que
+entrenamiento no ve.
+
+Con los datos preparados (`make data` y `make features`), desde `tec-mlops-equipo-27/`:
+
+```bash
+make validate                          # equivale a python -m mibici.validacion
+python -m mibici.validacion --estricto # código de salida 1 si alguna condición falla
+```
+
+El comando imprime una línea por chequeo y guarda:
+
+- `reports/validacion_datos.json`: resumen versionado con el estado de cada chequeo.
+- `reports/deepchecks/*.html`: reportes completos con gráficas (fuera de Git por su tamaño).
+
+El modo normal termina con código 0 aunque haya condiciones fallidas; esto indica
+que la validación se ejecutó, no que los datos estén aprobados. El campo
+`aprobado` del JSON resume el resultado de las condiciones. Usar `--estricto`
+cuando se necesite un código de salida 1 ante hallazgos.
+
+Las pruebas de `tests/test_validacion_datos.py` no requieren datos descargados:
+introducen cada problema en un panel sintético (nulos, nulos mezclados, tipos
+mezclados, columna constante, duplicados, fuga, drift de variables y objetivos,
+traslape de fechas y estaciones nuevas) y verifican que el chequeo correspondiente
+lo detecte, mientras que el panel limpio pasa todos.
+
+```bash
+python -m pytest tests/test_validacion_datos.py -v
+```
+
+**Compatibilidad.** DeepChecks 0.19.1 es la última versión publicada y se escribió
+para NumPy 1 y scikit-learn < 1.6. `preparar_deepchecks()` restaura `np.Inf`,
+`np.NaN` y el scorer `max_error` antes de importarla, y `requirements.txt` fija
+`setuptools==80.10.2` porque DeepChecks importa `pkg_resources`. Los chequeos que
+fallan con pandas 3 (`OutlierSampleDetection`, `TrainTestSamplesMix` y
+`MultivariateDrift`) no se usan.
+
+**Resultados sobre los datos reales** (`reports/validacion_datos.json`):
+3,085,050 filas de entrenamiento y 688,602 de prueba.
+
+- Integridad: todos los chequeos pasan en entrenamiento y en prueba (sin nulos
+  por encima del umbral, sin claves duplicadas, sin tipos mezclados ni fuga).
+- Particiones: sin traslape de fechas ni estaciones nuevas en prueba.
+- Objetivos: drift bajo (Kolmogorov-Smirnov 0.07 en P1; Cramér's V 0.003 en P2).
+- **Hallazgo:** drift en los cuatro promedios móviles de demanda
+  (`salidas_media_24`, `salidas_media_168`, `llegadas_media_24`,
+  `llegadas_media_168`), con Kolmogorov-Smirnov de 0.2, en el umbral. Los
+  rezagos simples no presentan drift. Es consistente con estacionalidad: prueba
+  (agosto y septiembre) cae en temporada de lluvias y regreso a clases, meses
+  que entrenamiento (octubre a junio) no incluye. Implica que el error en prueba
+  puede superar al de validación; se recomienda monitorear el drift y reentrenar
+  con datos recientes.
+
+![Pruebas de la validación](tec-mlops-equipo-27/reports/figures/deepchecks_pruebas.png)
+
+![Validación sobre los datos reales](tec-mlops-equipo-27/reports/figures/deepchecks_validacion.png)
 
 ### Parte 3. Chequeos básicos de seguridad
 
