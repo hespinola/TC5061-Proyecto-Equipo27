@@ -42,6 +42,10 @@ credentials/
 .aws/
 *.pem
 *.key
+*.p12
+*.pfx
+.netrc
+.pypirc
 
 # Entornos y cachés de Python.
 .venv/
