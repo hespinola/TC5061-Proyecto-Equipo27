@@ -8,6 +8,7 @@ No requiere datos descargados ni servidor de MLflow:
 """
 
 import json
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -94,6 +95,35 @@ def desplazar(df, dias):
 # ---------------------------------------------------------------------------
 # Compatibilidad y partición
 # ---------------------------------------------------------------------------
+def test_resumir_conserva_error_del_chequeo():
+    """Un chequeo con error no impide resumir los resultados posteriores."""
+    fallido = SimpleNamespace(
+        exception=ValueError("No hay datos suficientes para calcular drift"),
+        get_header=lambda: "Drift de demanda",
+    )
+    correcto = SimpleNamespace(
+        get_header=lambda: "Integridad",
+        conditions_results=[
+            SimpleNamespace(is_pass=lambda: True, details="Sin valores faltantes")
+        ],
+    )
+
+    resumen = v._resumir(SimpleNamespace(results=[fallido, correcto]))
+
+    assert resumen == [
+        {
+            "chequeo": "Drift de demanda",
+            "estado": "error",
+            "detalle": "No hay datos suficientes para calcular drift",
+        },
+        {
+            "chequeo": "Integridad",
+            "estado": "ok",
+            "detalle": "Sin valores faltantes",
+        },
+    ]
+
+
 def test_preparar_deepchecks_es_idempotente():
     primero = v.preparar_deepchecks()
     segundo = v.preparar_deepchecks()
