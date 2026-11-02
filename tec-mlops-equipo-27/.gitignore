@@ -202,6 +202,10 @@ mlartifacts/
 mlflow.db
 mlflow.db-*
 
+# Reportes HTML de DeepChecks (pesados; se regeneran con make validate).
+# El resumen reports/validacion_datos.json sí se versiona.
+/reports/deepchecks/
+
 # Modelos serializados (se conserva solo el marcador de la carpeta).
 /models/*
 !/models/.gitkeep
