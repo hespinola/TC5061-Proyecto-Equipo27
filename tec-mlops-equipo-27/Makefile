@@ -67,6 +67,11 @@ data:
 features:
 	$(PYTHON_INTERPRETER) -m mibici.preparar
 
+## Serve the P1 demand model as a REST API (FastAPI) on port 8000
+.PHONY: api
+api:
+	$(PYTHON_INTERPRETER) -m uvicorn mibici.api.app:app --host 0.0.0.0 --port 8000
+
 ## Validate panel quality, integrity and train/test drift with DeepChecks
 .PHONY: validate
 validate:

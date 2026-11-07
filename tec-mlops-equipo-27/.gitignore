@@ -219,3 +219,6 @@ mlflow.db-*
 !.env.example
 *.pem
 *.key
+
+# Copia local del modelo para servirlo sin MLflow (python -m mibici.api.descargar).
+/modelo_p1/
