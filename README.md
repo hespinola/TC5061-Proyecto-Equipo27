@@ -934,6 +934,29 @@ curl -X POST http://localhost:8000/predict/demanda \
 La respuesta incluye `modelo` (nombre, versión, alias, URI, corrida y origen del
 modelo que respondió) y `predicciones`, con `estacion_id`, `periodo` y
 `salidas_esperadas` (viajes esperados, ≥ 0) por cada instancia, en el mismo orden.
+Respuesta real de la ejecución local:
+
+```json
+{
+  "modelo": {
+    "nombre": "mibici-equipo27-p1-demanda",
+    "version": "1",
+    "alias": "champion",
+    "uri": "models:/mibici-equipo27-p1-demanda/1",
+    "run_id": "1ff251d8490946a79dd063d1c81124a9",
+    "origen": "registry"
+  },
+  "predicciones": [
+    {"estacion_id": 12, "periodo": "2026-09-15T08:00:00", "salidas_esperadas": 4.5759}
+  ]
+}
+```
+
+En ese registry local, la versión 1 se entrenó con el candidato elegido por el
+equipo (HistGradientBoosting, `n_estimators=160`, `max_depth=8`,
+`learning_rate=0.08`) y se guardó con `guardar_modelo`. Su MAE de validación
+(0.7194) coincide con el del registro de la Entrega 2 (0.7192). El `run_id`
+cambia en cada registry.
 
 **Validaciones.** Una entrada inválida responde 422 con el campo y el motivo:
 
@@ -958,3 +981,12 @@ el 503 sin modelo y cada regla de validación. No requiere datos descargados:
 ```bash
 python -m pytest tests/test_api.py -v
 ```
+
+**Evidencia de la ejecución local.** Pruebas de la API, `/health` con el modelo
+cargado desde el registry y una predicción desde `/docs`:
+
+![Pruebas de la API](tec-mlops-equipo-27/reports/figures/api_pruebas.png)
+
+![GET /health](tec-mlops-equipo-27/reports/figures/api_health.png)
+
+![POST /predict/demanda](tec-mlops-equipo-27/reports/figures/api_prediccion.png)
