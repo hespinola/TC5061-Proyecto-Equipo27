@@ -1,0 +1,18 @@
+# Include only the files needed to build and serve the model.
+**
+!Containerfile
+!.dockerignore
+!requirements.txt
+!pyproject.toml
+!README.md
+!LICENSE
+!mibici/
+!mibici/**
+!modelo_p1/
+!modelo_p1/**
+
+# Exclude generated Python files and environment configuration.
+**/__pycache__/
+**/*.py[cod]
+**/.env
+**/.env.*

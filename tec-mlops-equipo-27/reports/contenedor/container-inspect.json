@@ -1,0 +1,306 @@
+[
+     {
+          "Id": "bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52",
+          "Created": "2026-11-08T22:21:30.012960237-06:00",
+          "Path": "python",
+          "Args": [
+               "-m",
+               "uvicorn",
+               "mibici.api.app:app",
+               "--host",
+               "0.0.0.0",
+               "--port",
+               "8000"
+          ],
+          "State": {
+               "OciVersion": "1.3.0",
+               "Status": "running",
+               "Running": true,
+               "Paused": false,
+               "Restarting": false,
+               "OOMKilled": false,
+               "Dead": false,
+               "Pid": 3983,
+               "ConmonPid": 3981,
+               "ExitCode": 0,
+               "Error": "",
+               "StartedAt": "2026-11-08T22:21:30.216578234-06:00",
+               "FinishedAt": "0001-01-01T00:00:00Z",
+               "CgroupPath": "/user.slice/user-501.slice/user@501.service/user.slice/libpod-bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52.scope",
+               "CheckpointedAt": "0001-01-01T00:00:00Z",
+               "RestoredAt": "0001-01-01T00:00:00Z"
+          },
+          "Image": "1ab365e5e4be6704d087147847b5e2a03a0893e502a279fe060cdab042764622",
+          "ImageDigest": "sha256:80a5f822eeb3d39c0303be3473cb95eca261f8498df4e4c8cd0e83ef0361b4a2",
+          "ImageName": "localhost/mibici-api:1.0.0",
+          "Rootfs": "",
+          "Pod": "",
+          "ResolvConfPath": "/run/user/501/containers/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata/resolv.conf",
+          "HostnamePath": "/run/user/501/containers/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata/hostname",
+          "HostsPath": "/run/user/501/containers/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata/hosts",
+          "StaticDir": "/var/home/core/.local/share/containers/storage/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata",
+          "OCIConfigPath": "/var/home/core/.local/share/containers/storage/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata/config.json",
+          "OCIRuntime": "crun",
+          "ConmonPidFile": "/run/user/501/containers/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata/conmon.pid",
+          "PidFile": "/run/user/501/containers/overlay-containers/bdbd68fc2d094a23b1d8003b4bf32059af66db26abb24bcf5065923e9ca2ad52/userdata/pidfile",
+          "Name": "mibici-api",
+          "RestartCount": 0,
+          "Driver": "overlay",
+          "MountLabel": "system_u:object_r:container_file_t:s0:c282,c892",
+          "ProcessLabel": "system_u:system_r:container_t:s0:c282,c892",
+          "AppArmorProfile": "",
+          "EffectiveCaps": null,
+          "BoundingCaps": [
+               "CAP_CHOWN",
+               "CAP_DAC_OVERRIDE",
+               "CAP_FOWNER",
+               "CAP_FSETID",
+               "CAP_KILL",
+               "CAP_NET_BIND_SERVICE",
+               "CAP_SETFCAP",
+               "CAP_SETGID",
+               "CAP_SETPCAP",
+               "CAP_SETUID",
+               "CAP_SYS_CHROOT"
+          ],
+          "ExecIDs": [],
+          "GraphDriver": {
+               "Name": "overlay",
+               "Data": {
+                    "LowerDir": "/var/home/core/.local/share/containers/storage/overlay/a35eef103a0de57d8534093b669accc40937c3cf416e81dc51efdc1b7c2f4a07/diff:/var/home/core/.local/share/containers/storage/overlay/f16971ba281af5211f38d3c5ac45c131a38661eaf51efef5f008eff9a3080f31/diff:/var/home/core/.local/share/containers/storage/overlay/0a79bbd8ca4afdb403e56c39283bf2ee2e2060bc63fc3c093479aaba93e3cc33/diff:/var/home/core/.local/share/containers/storage/overlay/2f1ad2fa537116ca9eca35ad43996da5bfb309fc2782afe063db37dea417e2c2/diff:/var/home/core/.local/share/containers/storage/overlay/5f714431916bee03db2f8a8e457328ab8bd4c4c2914595a8b805d5347eefbb68/diff:/var/home/core/.local/share/containers/storage/overlay/ea63c204f8f4ea5b949d34925425d023d53e430133a97f56606d06f30e8a7358/diff:/var/home/core/.local/share/containers/storage/overlay/bdc4049d813708252f86f81583d130a3fbaa88a25ba96c248f885cdd1ca71198/diff:/var/home/core/.local/share/containers/storage/overlay/b32e350dbca9c37dae0fb3612c6fe9799ad69a7e5966eb24c96665e665e7aec8/diff:/var/home/core/.local/share/containers/storage/overlay/d38c64fd68b8fc8d454d03bb3c9843d12f1c0d50161e57db74c497bfc0bf26b2/diff:/var/home/core/.local/share/containers/storage/overlay/c96c411090da09187c55ab267826b3903b542b5c03f1cafa912d60e060e7850c/diff",
+                    "MergedDir": "/var/home/core/.local/share/containers/storage/overlay/62c33a6ece2d82427451f7ceb5a8e796faa0aa7234825f4da628aac7aadb79ef/merged",
+                    "UpperDir": "/var/home/core/.local/share/containers/storage/overlay/62c33a6ece2d82427451f7ceb5a8e796faa0aa7234825f4da628aac7aadb79ef/diff",
+                    "WorkDir": "/var/home/core/.local/share/containers/storage/overlay/62c33a6ece2d82427451f7ceb5a8e796faa0aa7234825f4da628aac7aadb79ef/work"
+               }
+          },
+          "Mounts": [],
+          "Dependencies": [],
+          "NetworkSettings": {
+               "EndpointID": "",
+               "Gateway": "10.88.0.1",
+               "IPAddress": "10.88.0.2",
+               "IPPrefixLen": 16,
+               "IPv6Gateway": "",
+               "GlobalIPv6Address": "",
+               "GlobalIPv6PrefixLen": 0,
+               "MacAddress": "96:b7:15:64:86:90",
+               "Bridge": "",
+               "SandboxID": "",
+               "HairpinMode": false,
+               "LinkLocalIPv6Address": "",
+               "LinkLocalIPv6PrefixLen": 0,
+               "Ports": {
+                    "8000/tcp": [
+                         {
+                              "HostIp": "127.0.0.1",
+                              "HostPort": "8001"
+                         }
+                    ]
+               },
+               "SandboxKey": "/run/user/501/netns/netns-02a3a91f-a372-a61d-8361-bcb15db71137",
+               "Networks": {
+                    "podman": {
+                         "EndpointID": "",
+                         "Gateway": "10.88.0.1",
+                         "IPAddress": "10.88.0.2",
+                         "IPPrefixLen": 16,
+                         "IPv6Gateway": "",
+                         "GlobalIPv6Address": "",
+                         "GlobalIPv6PrefixLen": 0,
+                         "MacAddress": "96:b7:15:64:86:90",
+                         "NetworkID": "2f259bab93aaaaa2542ba43ef33eb990d0999ee1b9924b557b7be53c0b7a1bb9",
+                         "DriverOpts": null,
+                         "IPAMConfig": null,
+                         "Links": null,
+                         "Aliases": [
+                              "bdbd68fc2d09"
+                         ]
+                    }
+               }
+          },
+          "Namespace": "",
+          "IsInfra": false,
+          "IsService": false,
+          "KubeExitCodePropagation": "invalid",
+          "lockNumber": 0,
+          "Config": {
+               "Hostname": "bdbd68fc2d09",
+               "Domainname": "",
+               "User": "10001:10001",
+               "AttachStdin": false,
+               "AttachStdout": false,
+               "AttachStderr": false,
+               "Tty": false,
+               "OpenStdin": false,
+               "StdinOnce": false,
+               "Env": [
+                    "container=podman",
+                    "HOME=/tmp",
+                    "PYTHONUNBUFFERED=1",
+                    "PYTHON_SHA256=abb0102e6d4ae027509bcb82327d9dd85515b44a3ba8ad538cfc5e9847029f68",
+                    "MODELO_RUTA=/opt/models/p1",
+                    "LANG=C.UTF-8",
+                    "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                    "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "PYTHON_VERSION=3.13.18",
+                    "PYTHONDONTWRITEBYTECODE=1",
+                    "PIP_NO_CACHE_DIR=1",
+                    "HOSTNAME=bdbd68fc2d09"
+               ],
+               "Cmd": [
+                    "python",
+                    "-m",
+                    "uvicorn",
+                    "mibici.api.app:app",
+                    "--host",
+                    "0.0.0.0",
+                    "--port",
+                    "8000"
+               ],
+               "Image": "localhost/mibici-api:1.0.0",
+               "Volumes": null,
+               "WorkingDir": "/app",
+               "Entrypoint": [],
+               "OnBuild": null,
+               "Labels": {
+                    "io.buildah.version": "1.45.2"
+               },
+               "Annotations": {
+                    "io.container.manager": "libpod",
+                    "org.opencontainers.image.stopSignal": "15",
+                    "org.systemd.property.KillSignal": "15",
+                    "org.systemd.property.TimeoutStopUSec": "uint64 10000000"
+               },
+               "StopSignal": "SIGTERM",
+               "HealthcheckOnFailureAction": "none",
+               "HealthLogDestination": "local",
+               "HealthcheckMaxLogCount": 5,
+               "HealthcheckMaxLogSize": 500,
+               "CreateCommand": [
+                    "podman",
+                    "run",
+                    "-d",
+                    "--name",
+                    "mibici-api",
+                    "-p",
+                    "127.0.0.1:8001:8000",
+                    "localhost/mibici-api:1.0.0"
+               ],
+               "Umask": "0022",
+               "Timeout": 0,
+               "StopTimeout": 10,
+               "Passwd": true,
+               "sdNotifyMode": "container",
+               "ExposedPorts": {
+                    "8000/tcp": {}
+               }
+          },
+          "HostConfig": {
+               "Binds": [],
+               "CgroupManager": "systemd",
+               "CgroupMode": "private",
+               "ContainerIDFile": "",
+               "LogConfig": {
+                    "Type": "journald",
+                    "Config": null,
+                    "Path": "",
+                    "Tag": "",
+                    "Size": "-1B"
+               },
+               "NetworkMode": "bridge",
+               "PortBindings": {
+                    "8000/tcp": [
+                         {
+                              "HostIp": "127.0.0.1",
+                              "HostPort": "8001"
+                         }
+                    ]
+               },
+               "RestartPolicy": {
+                    "Name": "no",
+                    "MaximumRetryCount": 0
+               },
+               "AutoRemove": false,
+               "AutoRemoveImage": false,
+               "Annotations": {
+                    "io.container.manager": "libpod",
+                    "org.opencontainers.image.stopSignal": "15",
+                    "org.systemd.property.KillSignal": "15",
+                    "org.systemd.property.TimeoutStopUSec": "uint64 10000000"
+               },
+               "VolumeDriver": "",
+               "VolumesFrom": null,
+               "CapAdd": [],
+               "CapDrop": [],
+               "Dns": [],
+               "DnsOptions": null,
+               "DnsSearch": null,
+               "ExtraHosts": null,
+               "HostsFile": "",
+               "GroupAdd": null,
+               "IpcMode": "shareable",
+               "Cgroup": "",
+               "Cgroups": "default",
+               "Links": null,
+               "OomScoreAdj": 0,
+               "PidMode": "private",
+               "Privileged": false,
+               "PublishAllPorts": false,
+               "ReadonlyRootfs": false,
+               "SecurityOpt": [],
+               "Tmpfs": {},
+               "UTSMode": "private",
+               "UsernsMode": "",
+               "ShmSize": 65536000,
+               "Runtime": "oci",
+               "ConsoleSize": [
+                    0,
+                    0
+               ],
+               "Isolation": "",
+               "CpuShares": 0,
+               "Memory": 0,
+               "NanoCpus": 0,
+               "CgroupParent": "user.slice",
+               "BlkioWeight": 0,
+               "BlkioWeightDevice": null,
+               "BlkioDeviceReadBps": null,
+               "BlkioDeviceWriteBps": null,
+               "BlkioDeviceReadIOps": null,
+               "BlkioDeviceWriteIOps": null,
+               "CpuPeriod": 0,
+               "CpuQuota": 0,
+               "CpuRealtimePeriod": 0,
+               "CpuRealtimeRuntime": 0,
+               "CpusetCpus": "",
+               "CpusetMems": "",
+               "Devices": [],
+               "DiskQuota": 0,
+               "KernelMemory": 0,
+               "MemoryReservation": 0,
+               "MemorySwap": 0,
+               "MemorySwappiness": null,
+               "OomKillDisable": false,
+               "PidsLimit": 0,
+               "Ulimits": [
+                    {
+                         "Name": "RLIMIT_NOFILE",
+                         "Soft": 524288,
+                         "Hard": 524288
+                    },
+                    {
+                         "Name": "RLIMIT_NPROC",
+                         "Soft": 7756,
+                         "Hard": 7756
+                    }
+               ],
+               "CpuCount": 0,
+               "CpuPercent": 0,
+               "IOMaximumIOps": 0,
+               "IOMaximumBandwidth": 0,
+               "CgroupConf": null
+          },
+          "UseImageHosts": false,
+          "UseImageHostname": false
+     }
+]
