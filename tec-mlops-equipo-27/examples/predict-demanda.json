@@ -1,0 +1,16 @@
+{
+  "instancias": [
+    {
+      "estacion_id": 12,
+      "periodo": "2026-09-15T08:00:00",
+      "salidas_rezago_24": 6,
+      "salidas_rezago_168": 5,
+      "salidas_media_24": 1.8,
+      "salidas_media_168": 1.6,
+      "llegadas_rezago_24": 3,
+      "llegadas_rezago_168": 4,
+      "llegadas_media_24": 1.7,
+      "llegadas_media_168": 1.5
+    }
+  ]
+}

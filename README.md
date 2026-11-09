@@ -990,3 +990,62 @@ cargado desde el registry y una predicción desde `/docs`:
 ![GET /health](tec-mlops-equipo-27/reports/figures/api_health.png)
 
 ![POST /predict/demanda](tec-mlops-equipo-27/reports/figures/api_prediccion.png)
+
+### Parte 2. API empaquetada en un contenedor con Podman
+
+El servicio utiliza inferencia en tiempo real: recibe las variables históricas de una estación y hora, calcula las variables de calendario y devuelve la demanda estimada mediante `POST /predict/demanda`.
+
+Para esta entrega se empaqueta dentro de la imagen una versión concreta de `mibici-equipo27-p1-demanda`, descargada del Model Registry de MLflow. Esto permite ejecutar el contenedor sin depender de un servidor de MLflow durante la inferencia. El nombre, la versión y el run de origen se conservan en `modelo_info.json`.
+
+**Preparación del modelo**
+
+Desde la raíz del repositorio:
+
+```bash
+cd tec-mlops-equipo-27
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+
+export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+export MODELO_NOMBRE=mibici-equipo27-p1-demanda
+
+# Usar la versión registrada que se documenta en la evidencia.
+export MODELO_VERSION=1
+unset MODELO_RUTA
+
+python -m mibici.api.descargar --destino modelo_p1
+```
+
+El servidor indicado debe contener esa versión y sus artefactos. Si el registry del equipo está en otra ubicación, ajustar `MLFLOW_TRACKING_URI`. La carpeta `modelo_p1/` no se versiona en Git y debe descargarse antes de construir la imagen.
+
+**Construcción y ejecución**
+
+Con Podman instalado y su máquina iniciada en macOS/Windows, desde el directorio anterior:
+
+```bash
+podman build -f Containerfile -t localhost/mibici-api:1.0.0 .
+
+podman run -d \
+  --name mibici-api \
+  -p 127.0.0.1:8001:8000 \
+  localhost/mibici-api:1.0.0
+```
+
+La imagen utiliza Python 3.13 y las dependencias de `requirements.txt`. El proceso se ejecuta como usuario sin privilegios y carga el modelo desde `/opt/models/p1`, configurado mediante `MODELO_RUTA`.
+
+**Consumo del servicio**
+
+```bash
+curl --fail-with-body http://127.0.0.1:8001/health
+
+curl --fail-with-body \
+  http://127.0.0.1:8001/predict/demanda \
+  -H 'Content-Type: application/json' \
+  --data-binary @examples/predict-demanda.json
+```
+
+La petición completa está en [examples/predict-demanda.json](tec-mlops-equipo-27/examples/predict-demanda.json). La respuesta real de la ejecución en contenedor está en [reports/contenedor/prediccion.json](tec-mlops-equipo-27/reports/contenedor/prediccion.json): incluye los datos del modelo y una predicción con `estacion_id`, `periodo` y `salidas_esperadas` por instancia.
+
+La documentación interactiva está disponible en `http://127.0.0.1:8001/docs`. Una petición válida responde HTTP 200; `{"instancias":[]}` responde HTTP 422. `/health` responde HTTP 200 cuando el modelo está cargado y HTTP 503 cuando no está disponible.
+
+![Predicción desde la API ejecutada en Podman](tec-mlops-equipo-27/reports/figures/api_contenedor.png)
