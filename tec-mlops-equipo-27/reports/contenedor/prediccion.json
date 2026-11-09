@@ -1,0 +1,1 @@
+{"modelo":{"nombre":"mibici-equipo27-p1-demanda","version":"1","alias":"container-demo","uri":"/opt/models/p1","run_id":"951299daae9b43afb305aac88c577925","origen":"local"},"predicciones":[{"estacion_id":12,"periodo":"2026-09-15T08:00:00","salidas_esperadas":4.593}]}
