@@ -844,3 +844,149 @@ El comando ejecuta Bandit y detect-secrets. La detección de secretos revisa arc
 La baseline contiene únicamente hashes e identificadores de MLflow revisados como falsos positivos. Las excepciones de Bandit están limitadas y justificadas en las llamadas internas a Git.
 
 Los mismos chequeos se ejecutan automáticamente en cada push y pull request.
+
+## Entrega 4 · Modelo como API REST
+
+### Parte 1. API de predicción con FastAPI
+
+`mibici/api/` sirve el modelo de P1 (`mibici-equipo27-p1-demanda`) como una API
+REST. La API recupera el modelo del Model Registry por nombre y versión (o alias),
+valida entradas y salidas con Pydantic y devuelve la predicción en JSON.
+
+**Estrategia de despliegue: inferencia en tiempo real.** P1 estima cuántos viajes
+iniciarán en una estación en la hora siguiente, a partir de la demanda de las
+horas y días previos. Su utilidad operativa (rebalanceo) depende de consultar la
+hora próxima con los datos más recientes, y el modelo responde en milisegundos,
+así que una API síncrona es más adecuada que un proceso por lotes. El endpoint
+acepta lotes de hasta 1,000 estaciones-hora para consultar varias estaciones en
+una sola petición.
+
+**Cómo se obtiene el modelo.** Se configura con variables de entorno:
+
+| Variable | Valor por defecto | Uso |
+|---|---|---|
+| `MLFLOW_TRACKING_URI` | `http://127.0.0.1:5000` | Servidor de MLflow con el Model Registry |
+| `MODELO_NOMBRE` | `mibici-equipo27-p1-demanda` | Nombre registrado |
+| `MODELO_VERSION` | (vacío) | Versión exacta; si se define, tiene prioridad sobre el alias |
+| `MODELO_ALIAS` | `champion` | Alias que se resuelve a su versión cuando no hay `MODELO_VERSION` |
+| `MODELO_RUTA` | (vacío) | Copia local del modelo; si se define, no se consulta el servidor |
+
+- **Desde el registry (opción principal):** al arrancar, la API resuelve el alias
+  a su número de versión y carga esa versión exacta, para que la versión reportada
+  sea la que responde. Si el servidor no está disponible, la API arranca de todos
+  modos, `/health` responde 503 con el motivo y la carga se reintenta en cada
+  petición.
+- **Modelo empaquetado:** `python -m mibici.api.descargar --destino modelo_p1`
+  descarga la versión del registry junto con `modelo_info.json` (nombre, versión,
+  alias y corrida). Con `MODELO_RUTA=modelo_p1`, la API sirve esa copia sin
+  servidor de MLflow. `modelo_p1/` está en `.gitignore`.
+
+En ambos casos la API verifica que la firma registrada tenga exactamente las
+columnas de `FEATURES_P1`, en orden, y se niega a servir otro modelo.
+
+**Ejecución local.** Con el servidor de MLflow activo y el modelo registrado
+(Entrega 2, Parte C), desde `tec-mlops-equipo-27/`:
+
+```bash
+export MLFLOW_TRACKING_URI=http://127.0.0.1:5000
+make api            # equivale a: uvicorn mibici.api.app:app --host 0.0.0.0 --port 8000
+```
+
+En PowerShell: `$env:MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"` y luego
+`python -m uvicorn mibici.api.app:app --host 0.0.0.0 --port 8000`.
+
+Desde un contenedor, `127.0.0.1` es el propio contenedor: el servidor de MLflow
+debe iniciarse con `--host 0.0.0.0` y la API usar
+`MLFLOW_TRACKING_URI=http://host.containers.internal:5000` (Podman) o
+`http://host.docker.internal:5000` (Docker).
+
+**Endpoints.** La documentación interactiva queda en `http://localhost:8000/docs`.
+
+| Método y ruta | Respuesta |
+|---|---|
+| `GET /health` | 200 con el modelo cargado (nombre, versión, alias, URI, corrida y origen), o 503 con el motivo |
+| `POST /predict/demanda` | 200 con una predicción por instancia; 422 si la entrada no es válida; 503 sin modelo |
+
+**Entrada.** Por cada estación y hora, la demanda ya observada. Las variables de
+calendario (hora, día, mes, fin de semana y sus codificaciones seno y coseno) las
+calcula la API con `features.agregar_variables_calendario`, la misma función del
+entrenamiento, para que no difieran de cómo se entrenó el modelo.
+
+```bash
+curl -X POST http://localhost:8000/predict/demanda \
+  -H "Content-Type: application/json" \
+  -d '{
+    "instancias": [{
+      "estacion_id": 12,
+      "periodo": "2026-09-15T08:00:00",
+      "salidas_rezago_24": 6,
+      "salidas_rezago_168": 5,
+      "salidas_media_24": 1.8,
+      "salidas_media_168": 1.6,
+      "llegadas_rezago_24": 3,
+      "llegadas_rezago_168": 4,
+      "llegadas_media_24": 1.7,
+      "llegadas_media_168": 1.5
+    }]
+  }'
+```
+
+La respuesta incluye `modelo` (nombre, versión, alias, URI, corrida y origen del
+modelo que respondió) y `predicciones`, con `estacion_id`, `periodo` y
+`salidas_esperadas` (viajes esperados, ≥ 0) por cada instancia, en el mismo orden.
+Respuesta real de la ejecución local:
+
+```json
+{
+  "modelo": {
+    "nombre": "mibici-equipo27-p1-demanda",
+    "version": "1",
+    "alias": "champion",
+    "uri": "models:/mibici-equipo27-p1-demanda/1",
+    "run_id": "1ff251d8490946a79dd063d1c81124a9",
+    "origen": "registry"
+  },
+  "predicciones": [
+    {"estacion_id": 12, "periodo": "2026-09-15T08:00:00", "salidas_esperadas": 4.5759}
+  ]
+}
+```
+
+En ese registry local, la versión 1 se entrenó con el candidato elegido por el
+equipo (HistGradientBoosting, `n_estimators=160`, `max_depth=8`,
+`learning_rate=0.08`) y se guardó con `guardar_modelo`. Su MAE de validación
+(0.7194) coincide con el del registro de la Entrega 2 (0.7192). El `run_id`
+cambia en cada registry.
+
+**Validaciones.** Una entrada inválida responde 422 con el campo y el motivo:
+
+- `estacion_id` entero ≥ 1; `periodo` en hora exacta (minutos y segundos en 0),
+  en hora local de Guadalajara. Si trae zona horaria, se convierte a
+  `America/Mexico_City`.
+- Rezagos enteros y promedios numéricos finitos entre 0 y 500 viajes por hora.
+- Todas las variables son obligatorias y no se aceptan campos adicionales.
+- Entre 1 y 1,000 instancias por petición, sin repetir estación y hora.
+
+Las salidas también se validan: si el modelo devuelve valores no finitos o un
+número distinto de predicciones, la API responde 500 en lugar de datos inválidos.
+Los valores ligeramente negativos del regresor se recortan en 0, porque un conteo
+de viajes no puede ser negativo.
+
+**Pruebas.** `tests/test_api.py` registra un modelo P1 pequeño con la misma función
+del entrenamiento (`guardar_modelo`) en un registry SQLite temporal. Verifica la
+carga por alias y por versión, la carga desde una copia local sin servidor, que la
+predicción coincida con la del modelo registrado, el rechazo de firmas distintas,
+el 503 sin modelo y cada regla de validación. No requiere datos descargados:
+
+```bash
+python -m pytest tests/test_api.py -v
+```
+
+**Evidencia de la ejecución local.** Pruebas de la API, `/health` con el modelo
+cargado desde el registry y una predicción desde `/docs`:
+
+![Pruebas de la API](tec-mlops-equipo-27/reports/figures/api_pruebas.png)
+
+![GET /health](tec-mlops-equipo-27/reports/figures/api_health.png)
+
+![POST /predict/demanda](tec-mlops-equipo-27/reports/figures/api_prediccion.png)
