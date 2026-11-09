@@ -1049,3 +1049,97 @@ La petición completa está en [examples/predict-demanda.json](tec-mlops-equipo-
 La documentación interactiva está disponible en `http://127.0.0.1:8001/docs`. Una petición válida responde HTTP 200; `{"instancias":[]}` responde HTTP 422. `/health` responde HTTP 200 cuando el modelo está cargado y HTTP 503 cuando no está disponible.
 
 ![Predicción desde la API ejecutada en Podman](tec-mlops-equipo-27/reports/figures/api_contenedor.png)
+
+**Equivalentes en Windows PowerShell**
+
+Desde la raíz del repositorio, con Python 3.13 y Podman instalados. El servidor
+de MLflow debe estar activo y contener la versión seleccionada:
+
+```powershell
+cd tec-mlops-equipo-27
+# Crear el entorno solo si todavía no existe.
+py -3.13 -m venv .venv
+& .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+$env:MLFLOW_TRACKING_URI = "http://127.0.0.1:5000"
+$env:MODELO_NOMBRE = "mibici-equipo27-p1-demanda"
+$env:MODELO_VERSION = "1"
+Remove-Item Env:MODELO_RUTA -ErrorAction SilentlyContinue
+& .\.venv\Scripts\python.exe -m mibici.api.descargar --destino modelo_p1
+```
+
+La descarga reemplaza el contenido de `modelo_p1/` si ya existe. Seleccionar la
+versión disponible en el registry que se quiere desplegar.
+
+Comprobar la máquina de Podman con `podman machine list`. Si no existe, ejecutar
+`podman machine init`; si está detenida, ejecutar `podman machine start`.
+Después, desde el mismo subdirectorio:
+
+```powershell
+podman build -f Containerfile -t localhost/mibici-api:1.0.0 .
+podman run -d --name mibici-api -p 127.0.0.1:8001:8000 localhost/mibici-api:1.0.0
+
+Invoke-RestMethod -Uri http://127.0.0.1:8001/health | ConvertTo-Json -Depth 5
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8001/predict/demanda -ContentType 'application/json' -InFile .\examples\predict-demanda.json | ConvertTo-Json -Depth 5
+```
+
+Esperar a que `/health` responda 200 antes de enviar predicciones. Para diagnosticar
+el arranque, usar `podman logs mibici-api`. El puerto del equipo es **8001** y el
+interno del contenedor es **8000**. Al terminar:
+
+```powershell
+podman stop mibici-api
+podman rm mibici-api
+```
+
+### Parte 3. Pruebas de contrato e integración
+
+Las dos suites de API se ejecutan desde `tec-mlops-equipo-27/`, con Python 3.13
+y las dependencias de `requirements.txt` instaladas:
+
+```bash
+python -m pytest tests/test_api.py tests/test_api_contract.py -q
+```
+
+En PowerShell, sin necesidad de activar el entorno:
+
+```powershell
+& .\.venv\Scripts\python.exe -m pytest tests/test_api.py tests/test_api_contract.py -q
+```
+
+| Archivo | Casos | Alcance |
+|---|---:|---|
+| `tests/test_api.py` | 29 | Integración con un registry SQLite temporal: carga por alias y versión, copia local, firma, paridad de predicciones y validaciones. |
+| `tests/test_api_contract.py` | 23 | Contrato HTTP con `TestClient` y un modelo controlado: cuerpos JSON, códigos de respuesta, límites, fechas y OpenAPI. |
+
+Las pruebas de contrato mantienen las rutas, el ciclo de vida y las validaciones
+reales de la aplicación; sustituyen únicamente el cargador del servicio. No
+entrenan modelos ni contactan el registry. Algunos ejemplos de lo que verifican:
+
+- Una respuesta 200 conserva el orden, la estación y la hora de cada instancia,
+  junto con los metadatos del modelo y predicciones numéricas finitas.
+- Se aceptan lotes de 1 y 1,000 instancias y valores históricos de 0 y 500.
+- Un cuerpo ausente, JSON malformado o campos adicionales devuelve 422 sin
+  ejecutar el modelo; el detalle identifica el tipo y la ubicación del error.
+- Dos registros de la misma estación que representan la misma hora en UTC y
+  hora local se rechazan como duplicados.
+- Sin modelo, el servicio devuelve 503 y puede recuperarse cuando vuelve a estar
+  disponible; una salida no finita o de longitud incorrecta devuelve 500.
+- OpenAPI mantiene los métodos, campos obligatorios y límites esperados.
+
+**Evidencia de ejecución.** En Windows con Python 3.13.18, la ejecución conjunta
+registró **52 pruebas aprobadas**, con dos advertencias de deprecación de
+Starlette y SQLAlchemy, en 12.61 segundos. La salida se conserva en
+[reports/pruebas_api/pytest.txt](tec-mlops-equipo-27/reports/pruebas_api/pytest.txt).
+Es una transcripción real de las pruebas, complementaria a las capturas de la
+API y del contenedor incluidas en las partes 1 y 2. Esta ejecución verifica la
+API mediante `TestClient`; no construye ni inicia un contenedor.
+
+**Estado de GitHub Actions.** El workflow existente
+[Security checks](.github/workflows/security.yml) se ejecuta en pushes y pull
+requests y analiza el código y posibles secretos. No construye la imagen ni
+realiza peticiones a la API. El job de integración del contenedor sigue pendiente:
+deberá preparar el modelo requerido por el `Containerfile`, construir la imagen,
+iniciar el contenedor, esperar un 200 de `/health` y verificar una respuesta
+válida de `/predict/demanda`. Los resultados locales anteriores no constituyen
+evidencia de ese job.
