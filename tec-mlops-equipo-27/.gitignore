@@ -222,3 +222,7 @@ mlflow.db-*
 
 # Copia local del modelo para servirlo sin MLflow (python -m mibici.api.descargar).
 /modelo_p1/
+
+# Reportes HTML de Evidently (pesan varios MB; se regeneran ejecutando el notebook 2.0).
+# Los CSV de drift por variable ya quedan fuera de Git por la regla *.csv.
+/reports/drift/*.html

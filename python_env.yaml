@@ -14,6 +14,7 @@ dependencies:
   - mkdocs==1.6.1
   - mlflow==3.17.1
   - numpy==2.5.4
+  - evidently==0.7.23
   - pandas==3.0.6
   - pyarrow==25.0.1
   - pydantic==2.14.2

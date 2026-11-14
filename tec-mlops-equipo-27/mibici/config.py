@@ -98,8 +98,14 @@ URLS_VIAJES = {
     "2026-07": "https://mibici.net/site/assets/files/129006/datos_abiertos_2026_07.csv",
     "2026-08": "https://mibici.net/site/assets/files/130362/datos_abiertos_2026_08.csv",
     "2026-09": "https://mibici.net/site/assets/files/131825/datos_abiertos_2026_09.csv",
+    # Mes posterior a PERIODO_FIN: no entra en MESES ni en el manifiesto congelado; solo
+    # lo consume el notebook de drift (2.0) mediante mibici.drift.
+    "2026-10": "https://mibici.net/site/assets/files/133188/datos_abiertos_2026_10.csv",
 }
 URL_NOMENCLATURA = "https://mibici.net/site/assets/files/1118/nomenclatura_2026_09.csv"
+
+# Mes nuevo que se compara contra el periodo congelado (monitoreo de drift con Evidently).
+MES_NUEVO = "2026-10"
 
 # Meses del periodo en orden; dataset.py debe descargar exactamente estos.
 MESES = sorted(m for m in URLS_VIAJES if PERIODO_INICIO <= m <= PERIODO_FIN)
