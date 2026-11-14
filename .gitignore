@@ -84,5 +84,8 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Reportes HTML de Evidently (pesan varios MB); los CSV de drift por variable sí se versionan.
+/reports/drift/*.html
+
 # Se versionan: código, dependencias y archivos de bloqueo,
 # referencias, manifiestos de datos, documentación y evidencias elegidas.
