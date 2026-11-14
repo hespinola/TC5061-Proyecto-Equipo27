@@ -1,0 +1,17 @@
+Ejecucion local: Windows, Python 3.13.18
+Base: bb26b6b (main)
+Comando: python -m pytest tests/test_api.py tests/test_api_contract.py -q
+Las rutas absolutas se sustituyeron por <proyecto>.
+
+....................................................                     [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  <proyecto>\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_api.py::test_carga_por_alias_reporta_la_version_resuelta
+  <proyecto>\.venv\Lib\site-packages\mlflow\store\tracking\sqlalchemy_store.py:327: SADeprecationWarning: The ``noload`` loader strategy is deprecated and will be removed in a future release.  This option produces incorrect results by returning ``None`` for related items. (deprecated since: 2.1)
+    sqlalchemy.orm.configure_mappers()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+52 passed, 2 warnings in 12.61s
