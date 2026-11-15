@@ -29,13 +29,21 @@ from urllib3.util.retry import Retry
 
 from mibici.config import (
     DATA_MANIFEST_PATH,
+    FIN_ENTRENAMIENTO,
     MES_NUEVO,
     PROCESSED_DATA_DIR,
     RAW_DATA_DIR,
     SEED,
     URLS_VIAJES,
 )
-from mibici.dataset import descargar, detectar_codificacion, normalizar_viajes
+from mibici.dataset import (
+    ALIASES,
+    descargar,
+    detectar_codificacion,
+    nombre_columna,
+    normalizar_viajes,
+    sha256_archivo,
+)
 
 VARIABLES_NUMERICAS = ("duracion_min", "capacidad_origen", "latitud_origen", "longitud_origen")
 # Discretas: se comparan como categorías (distancia de Jensen-Shannon en Evidently).
@@ -79,19 +87,30 @@ def cargar_mes(mes: str = MES_NUEVO, raw_dir: Path = RAW_DATA_DIR) -> tuple[pd.D
 
     Devuelve los viajes válidos y los contadores de descarte, con el mismo significado
     que en el manifiesto (``originales``, ``invalidos``, ``fuera_periodo``,
-    ``duplicados``, ``validos``). A diferencia de ``ingestar``, un ``viaje_id`` repetido
-    se conserva una sola vez sin abortar: aquí se mide la calidad, no se congela una versión.
+    ``duplicados``, ``validos``). Los duplicados idénticos se conservan una vez; los IDs con datos
+    contradictorios se rechazan como en la ingesta original.
     """
     path = _ruta_mes(mes, raw_dir)
     inicio = pd.Timestamp(f"{mes}-01")
     fin = inicio + pd.offsets.MonthBegin(1)
-    crudo = pd.read_csv(path, encoding=detectar_codificacion(path))
+    encoding = detectar_codificacion(path)
+    crudo = pd.read_csv(
+        path,
+        encoding=encoding,
+        usecols=lambda columna: nombre_columna(columna) in ALIASES,
+    )
     viajes, stats = normalizar_viajes(crudo, str(inicio), str(fin))
+    duplicados = viajes.loc[viajes.duplicated("viaje_id", keep=False)]
+    if duplicados.drop_duplicates().duplicated("viaje_id").any():
+        raise ValueError("El CSV contiene IDs repetidos con datos contradictorios.")
     antes = len(viajes)
     viajes = viajes.drop_duplicates("viaje_id", keep="first").reset_index(drop=True)
     stats["duplicados"] = antes - len(viajes)
     stats["validos"] = len(viajes)
     stats["archivo"] = path.name
+    stats["sha256"] = sha256_archivo(path)
+    stats["bytes"] = path.stat().st_size
+    stats["codificacion"] = encoding
     logger.info(f"{mes}: {stats['validos']:,} viajes válidos de {stats['originales']:,}")
     return viajes, stats
 
@@ -99,7 +118,7 @@ def cargar_mes(mes: str = MES_NUEVO, raw_dir: Path = RAW_DATA_DIR) -> tuple[pd.D
 def cargar_referencia(
     meses: list[str] | None = None, processed_dir: Path = PROCESSED_DATA_DIR
 ) -> pd.DataFrame:
-    """Viajes ya normalizados del periodo congelado (``make data`` / ``mlflow run -e ingest``)."""
+    """Viajes de entrenamiento; meses explícitos seleccionan otro subconjunto."""
     path = processed_dir / "viajes.parquet"
     if not path.exists():
         raise FileNotFoundError(
@@ -107,12 +126,15 @@ def cargar_referencia(
             "(o python -m mibici.dataset desde tec-mlops-equipo-27)."
         )
     viajes = pd.read_parquet(path)
-    if meses:
+    if meses is None:
+        corte = pd.Timestamp(FIN_ENTRENAMIENTO) + pd.Timedelta(days=1)
+        viajes = viajes.loc[viajes["inicio_del_viaje"] < corte]
+    else:
         periodo = viajes["inicio_del_viaje"].dt.strftime("%Y-%m")
-        viajes = viajes.loc[periodo.isin(meses)].reset_index(drop=True)
-        if viajes.empty:
-            raise ValueError(f"La referencia no contiene viajes de {meses}.")
-    return viajes
+        viajes = viajes.loc[periodo.isin(meses)]
+    if viajes.empty:
+        raise ValueError(f"La referencia no contiene viajes para la selección {meses}.")
+    return viajes.reset_index(drop=True)
 
 
 def cargar_nomenclatura(processed_dir: Path = PROCESSED_DATA_DIR) -> pd.DataFrame:
@@ -158,7 +180,12 @@ def descartes_referencia(manifest_path: Path = DATA_MANIFEST_PATH) -> pd.DataFra
     """Contadores de descarte por mes tomados del manifiesto versionado."""
     archivos = json.loads(manifest_path.read_text(encoding="utf-8"))["archivos"]
     columnas = ["originales", "invalidos", "fuera_periodo", "duplicados", "validos"]
-    return pd.DataFrame({m: v for m, v in archivos.items() if m != "nomenclatura"}).T[columnas]
+    meses = {
+        m: valores
+        for m, valores in archivos.items()
+        if m != "nomenclatura" and m <= FIN_ENTRENAMIENTO[:7]
+    }
+    return pd.DataFrame(meses).T[columnas].sort_index()
 
 
 def tabla_descartes(referencia: pd.DataFrame, nuevo: dict, mes: str = MES_NUEVO) -> pd.DataFrame:
@@ -183,7 +210,7 @@ def resumen_calidad(
         d = df["duracion_min"]
         return {
             "filas": len(df),
-            "filas_duplicadas_pct": 100 * df.duplicated().mean(),
+            "combinaciones_repetidas_pct": 100 * df.duplicated().mean(),
             "faltantes_totales_pct": 100 * df.isna().to_numpy().mean(),
             "duracion_negativa_o_cero_pct": 100 * (d <= 0).mean(),
             f"duracion_menor_{DURACION_CORTA_MIN:g}_min_pct": 100
@@ -221,30 +248,33 @@ def resumen_variables(referencia: pd.DataFrame, actual: pd.DataFrame) -> pd.Data
 # ---------------------------------------------------------------------------
 # Lectura de resultados de Evidently
 # ---------------------------------------------------------------------------
-def tabla_drift(resultado: dict) -> pd.DataFrame:
-    """Drift por variable a partir de ``snapshot.dict()`` de un Report con DataDriftPreset.
-
-    ``drift`` usa el veredicto de la prueba de Evidently (``FAIL`` = drift detectado),
-    de modo que respeta la dirección de cada método (distancia vs. valor p).
-    """
+def tabla_drift(resultado: dict, numericas=VARIABLES_NUMERICAS) -> pd.DataFrame:
+    """Lee los veredictos reales; los ausentes o desconocidos no equivalen a False."""
     estados = {}
     for prueba in resultado.get("tests", []):
-        m = re.fullmatch(r"Value Drift for column (.)", prueba["name"])
-        if m:
-            estados[m.group(1)] = str(prueba["status"]).rsplit(".", 1)[-1] == "FAIL"
+        coincidencia = re.fullmatch(r"Value Drift for column (.+)", prueba.get("name", ""))
+        if coincidencia:
+            estado = str(prueba["status"]).rsplit(".", 1)[-1]
+            if estado not in {"FAIL", "SUCCESS"}:
+                raise ValueError(f"Estado de drift no interpretable: {estado}")
+            estados[coincidencia.group(1)] = estado == "FAIL"
     filas = []
     for metrica in resultado["metrics"]:
         cfg = metrica["config"]
         if cfg["type"].endswith(":ValueDrift"):
             col = cfg["column"]
+            if col not in estados:
+                raise ValueError(f"No se encontró el veredicto de Evidently para {col}.")
             filas.append(
                 {
                     "variable": col,
-                    "tipo": "numérica" if col in VARIABLES_NUMERICAS else "categórica",
+                    "tipo": "numérica" if col in numericas else "categórica",
                     "metodo": cfg["method"],
                     "umbral": cfg["threshold"],
                     "puntaje": float(metrica["value"]),
-                    "drift": estados.get(col),
+                    "drift": estados[col],
                 }
             )
+    if not filas:
+        raise ValueError("El resultado no contiene métricas ValueDrift.")
     return pd.DataFrame(filas).set_index("variable").sort_values("puntaje", ascending=False)

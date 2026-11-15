@@ -1,0 +1,425 @@
+{
+  "ejercicio": "monitoreo_retrospectivo_p1",
+  "modelo_documentado": {
+    "name": "mibici-equipo27-p1-demanda",
+    "version": "1",
+    "run_id": "683b78f7fe9643be9b7496a77c951e58",
+    "source_commit": "9cd40eb0af9feed8bcbf6048a74292e04b8709c2",
+    "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1"
+  },
+  "hiperparametros_modelo": {
+    "n_estimators": 160,
+    "max_depth": 8,
+    "learning_rate": 0.08
+  },
+  "data_version_referencia": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+  "sha256_manifiesto": "76f88e8561d7b2c5730bcc5198d4dae176705d955000cc366275f3e5ae9bbc06",
+  "archivo_actual": {
+    "originales": 635532,
+    "invalidos": 0,
+    "fuera_periodo": 0,
+    "duplicados": 0,
+    "validos": 635532,
+    "archivo": "datos_abiertos_2026_10.csv",
+    "sha256": "0cdfb05299e6db658ac9cc7723494a9704b0749e3671c29c8566826ea889b900",
+    "bytes": 55222199,
+    "codificacion": "utf-8-sig"
+  },
+  "periodos": {
+    "referencia_inicio": "2025-10-01",
+    "referencia_fin_exclusivo": "2026-07-01",
+    "referencia_primera_fila_elegible": "2025-10-08T00:00:00",
+    "actual_inicio": "2026-10-01",
+    "actual_fin_exclusivo": "2026-11-01",
+    "control_estacional": "2025-10",
+    "horas_contexto": 168
+  },
+  "filas": {
+    "referencia_elegibles": 3006864,
+    "referencia_run_documentado": 3006864,
+    "referencia_excluidas_por_rezagos": 79128,
+    "actual_antes_filtrar": 350424,
+    "actual_elegibles": 350424,
+    "actual_excluidas": 0,
+    "control_elegibles": 271296,
+    "muestra_referencia": 100000,
+    "muestra_actual": 100000,
+    "muestra_control": 100000
+  },
+  "calidad": {
+    "dias_con_viajes": 31,
+    "dias_esperados": 31,
+    "faltantes_actual_por_variable": {
+      "hora_del_dia": 0,
+      "dia_semana": 0,
+      "es_fin_de_semana": 0,
+      "mes": 0,
+      "hora_sin": 0,
+      "hora_cos": 0,
+      "dia_sin": 0,
+      "dia_cos": 0,
+      "salidas_rezago_24": 0,
+      "salidas_rezago_168": 0,
+      "salidas_media_24": 0,
+      "salidas_media_168": 0,
+      "llegadas_rezago_24": 0,
+      "llegadas_rezago_168": 0,
+      "llegadas_media_24": 0,
+      "llegadas_media_168": 0
+    },
+    "estaciones_cohorte": 471,
+    "estaciones_nuevas_fuera_cohorte": [
+      124,
+      492
+    ],
+    "estaciones_cohorte_sin_viajes_del_mes": [
+      175,
+      405,
+      407
+    ],
+    "salidas_en_cohorte": 635356,
+    "salidas_fuera_cohorte": 176,
+    "llegadas_historicas_en_mes": 16,
+    "filas_estacion_hora": 350424,
+    "horas_por_estacion": 744
+  },
+  "configuracion": {
+    "features": [
+      "hora_del_dia",
+      "dia_semana",
+      "es_fin_de_semana",
+      "mes",
+      "hora_sin",
+      "hora_cos",
+      "dia_sin",
+      "dia_cos",
+      "salidas_rezago_24",
+      "salidas_rezago_168",
+      "salidas_media_24",
+      "salidas_media_168",
+      "llegadas_rezago_24",
+      "llegadas_rezago_168",
+      "llegadas_media_24",
+      "llegadas_media_168"
+    ],
+    "categoricas": [
+      "hora_del_dia",
+      "dia_semana",
+      "es_fin_de_semana",
+      "mes"
+    ],
+    "numericas": [
+      "hora_sin",
+      "hora_cos",
+      "dia_sin",
+      "dia_cos",
+      "salidas_rezago_24",
+      "salidas_rezago_168",
+      "salidas_media_24",
+      "salidas_media_168",
+      "llegadas_rezago_24",
+      "llegadas_rezago_168",
+      "llegadas_media_24",
+      "llegadas_media_168"
+    ],
+    "metodo_numerico": "wasserstein",
+    "metodo_categorico": "jensenshannon",
+    "umbral": 0.1,
+    "proporcion_alerta": 0.5,
+    "seed": 42,
+    "muestra_solicitada": 100000
+  },
+  "variables_con_drift": 9,
+  "proporcion_variables_con_drift": 0.5625,
+  "drift_por_variable": [
+    {
+      "variable": "mes",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.7332025190445158,
+      "drift": true
+    },
+    {
+      "variable": "salidas_media_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.5883820835673109,
+      "drift": true
+    },
+    {
+      "variable": "salidas_media_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.5831544458507549,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_media_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.5649050459159477,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_media_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.5585381175309679,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_rezago_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.3438886823885296,
+      "drift": true
+    },
+    {
+      "variable": "salidas_rezago_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.3382534809286378,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_rezago_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.33312721646749865,
+      "drift": true
+    },
+    {
+      "variable": "salidas_rezago_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.32370432729687276,
+      "drift": true
+    },
+    {
+      "variable": "dia_cos",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.0904885029900771,
+      "drift": false
+    },
+    {
+      "variable": "dia_sin",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.03912898776610522,
+      "drift": false
+    },
+    {
+      "variable": "dia_semana",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.03811367623482011,
+      "drift": false
+    },
+    {
+      "variable": "hora_del_dia",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.00559957126543597,
+      "drift": false
+    },
+    {
+      "variable": "es_fin_de_semana",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.0023118494055620166,
+      "drift": false
+    },
+    {
+      "variable": "hora_cos",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.0022963010896222126,
+      "drift": false
+    },
+    {
+      "variable": "hora_sin",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.0019402179767965665,
+      "drift": false
+    }
+  ],
+  "control_por_variable": [
+    {
+      "variable": "salidas_media_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.42558811287766507,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_media_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.40811188573041157,
+      "drift": true
+    },
+    {
+      "variable": "salidas_media_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.40630449602454854,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_media_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.38901673721429686,
+      "drift": true
+    },
+    {
+      "variable": "salidas_rezago_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.25120392628957244,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_rezago_24",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.2476077933762205,
+      "drift": true
+    },
+    {
+      "variable": "llegadas_rezago_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.22719675373128304,
+      "drift": true
+    },
+    {
+      "variable": "salidas_rezago_168",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.22683903200716649,
+      "drift": true
+    },
+    {
+      "variable": "dia_sin",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.09607870939114124,
+      "drift": false
+    },
+    {
+      "variable": "dia_semana",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.04696329302388393,
+      "drift": false
+    },
+    {
+      "variable": "es_fin_de_semana",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.030828490244715515,
+      "drift": false
+    },
+    {
+      "variable": "dia_cos",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.02516220468904564,
+      "drift": false
+    },
+    {
+      "variable": "hora_del_dia",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.004955889898773799,
+      "drift": false
+    },
+    {
+      "variable": "hora_sin",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.0034524844682016892,
+      "drift": false
+    },
+    {
+      "variable": "hora_cos",
+      "tipo": "numérica",
+      "metodo": "wasserstein",
+      "umbral": 0.1,
+      "puntaje": 0.0033948494937843417,
+      "drift": false
+    },
+    {
+      "variable": "mes",
+      "tipo": "categórica",
+      "metodo": "jensenshannon",
+      "umbral": 0.1,
+      "puntaje": 0.0,
+      "drift": false
+    }
+  ],
+  "entorno": {
+    "evidently": "0.7.23",
+    "pandas": "3.0.6",
+    "numpy": "2.5.4",
+    "pyarrow": "25.0.1",
+    "scikit-learn": "1.9.1"
+  },
+  "codigo_sha256": {
+    "mibici/config.py": "d7b7d7bf278b1a6d867a7e5dedf4dbb56f27e5ca35f4b3bd4b32a774de76727d",
+    "mibici/dataset.py": "59d66fc5387f3036b32f71986d771b57ad3793a6e4a5d6d7cdfb9ab6f63b8eed",
+    "mibici/features.py": "c9ae37ff96cfa8782a435ed7aa81d9d45b172af0b5cd0e7fa2c1111c3d0724fe",
+    "mibici/preparar.py": "8d42b3b695c5f5d70dd0e99f0bf4a60049672c7caa3ac755622cebc51135b235",
+    "mibici/drift.py": "05a742fa8b95c2bc7ec7d2cd5a1ebbd2cd8d8a46e72471975645a5d4699f123f",
+    "mibici/monitoreo_p1.py": "c7ac17b15c5de80aeec1a45eca8751e87c9cc28db2d4787e5b859f947c4f89a8"
+  },
+  "archivos": {
+    "calidad_html": "reports/drift/calidad_p1_2026-10_vs_entrenamiento.html",
+    "vs_entrenamiento_html": "reports/drift/drift_p1_2026-10_vs_entrenamiento.html",
+    "vs_entrenamiento_csv": "reports/drift/drift_p1_2026-10_vs_entrenamiento.csv",
+    "vs_2025-10_html": "reports/drift/drift_p1_2026-10_vs_2025-10.html",
+    "vs_2025-10_csv": "reports/drift/drift_p1_2026-10_vs_2025-10.csv",
+    "grafica_png": "reports/drift/drift_p1_2026-10.png"
+  },
+  "limitaciones": [
+    "Se monitorea la cohorte de estaciones del panel original; las nuevas se reportan aparte.",
+    "Una hora sin viajes observados se representa con cero como en el pipeline original.",
+    "El control de un mismo mes en otro año no identifica por sí solo una causa estacional.",
+    "La referencia estacional pierde el calentamiento inicial de los rezagos.",
+    "Los umbrales son exploratorios; el drift no demuestra pérdida de desempeño.",
+    "La versión base se identifica por evidencia versionada, sin resolver un alias vigente."
+  ]
+}

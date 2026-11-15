@@ -107,6 +107,11 @@ URL_NOMENCLATURA = "https://mibici.net/site/assets/files/1118/nomenclatura_2026_
 # Mes nuevo que se compara contra el periodo congelado (monitoreo de drift con Evidently).
 MES_NUEVO = "2026-10"
 
+# Monitoreo retrospectivo de las entradas de P1.
+MUESTRA_MONITOREO_P1 = 100_000
+UMBRAL_MONITOREO_P1 = 0.1
+PROPORCION_MONITOREO_P1 = 0.5
+
 # Meses del periodo en orden; dataset.py debe descargar exactamente estos.
 MESES = sorted(m for m in URLS_VIAJES if PERIODO_INICIO <= m <= PERIODO_FIN)
 OBSERVACION_INICIO = f"{PERIODO_INICIO}-01"

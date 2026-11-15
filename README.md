@@ -1143,3 +1143,16 @@ deberá preparar el modelo requerido por el `Containerfile`, construir la imagen
 iniciar el contenedor, esperar un 200 de `/health` y verificar una respuesta
 válida de `/predict/demanda`. Los resultados locales anteriores no constituyen
 evidencia de ese job.
+
+## Monitoreo de P1: Entregable 8
+
+El monitoreo compara las entradas por estación y hora del modelo P1 con un periodo posterior y conserva el análisis de viajes como complemento.
+
+- [Guía de periodos, ejecución y límites](tec-mlops-equipo-27/references/monitoreo-p1.md).
+- [Notebook de Evidently](tec-mlops-equipo-27/notebooks/evidently-mibici.ipynb).
+
+Desde el subdirectorio del proyecto, con su entorno activado:
+
+    python -m mibici.monitoreo_p1
+
+Las métricas reales y la trazabilidad se generan en reports/drift. La comparación de modelos y Continuous Training corresponden a pasos posteriores.
