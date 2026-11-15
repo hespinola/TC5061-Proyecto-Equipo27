@@ -21,7 +21,9 @@ def verificar_datos(processed_dir=PROCESSED_DATA_DIR, manifest_path=DATA_MANIFES
     return manifest
 
 
-def preparar(processed_dir=PROCESSED_DATA_DIR, manifest_path=DATA_MANIFEST_PATH):
+def preparar(
+    processed_dir=PROCESSED_DATA_DIR, manifest_path=DATA_MANIFEST_PATH, guardar=True
+):
     manifest = verificar_datos(processed_dir, manifest_path)
     inicio, fin = pd.Timestamp(manifest["inicio"]), pd.Timestamp(manifest["fin_exclusivo"])
     acumulados = {"salidas": None, "llegadas": None}
@@ -66,9 +68,10 @@ def preparar(processed_dir=PROCESSED_DATA_DIR, manifest_path=DATA_MANIFEST_PATH)
         "data_version": manifest["data_version"],
         "llegadas_fuera_periodo": llegadas_fuera,
     }
-    panel.to_parquet(
-        processed_dir / "panel_estacion_hora.parquet", index=False, compression="zstd"
-    )
+    if guardar:
+        panel.to_parquet(
+            processed_dir / "panel_estacion_hora.parquet", index=False, compression="zstd"
+        )
     logger.success(
         f"Panel: {len(panel):,} filas, {len(ids)} estaciones; llegadas fuera={llegadas_fuera}"
     )
