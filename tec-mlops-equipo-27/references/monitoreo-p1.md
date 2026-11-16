@@ -73,7 +73,20 @@ real para verificar que los veredictos exportados se interpretan correctamente.
 No descarga datos de MiBici ni necesita un servidor MLflow.
 
 La ingesta congelada debe existir y coincidir con el manifiesto. El CSV de octubre
-se descarga con el cliente existente y se guarda en data/raw. El mes actual debe
+se descarga con el cliente existente y se guarda en data/raw.
+
+Si no se dispone de los Parquet congelados verificados (por ejemplo, porque el
+catálogo de estaciones ya no responde o el Parquet regenerado no reproduce su
+hash), el histórico de P1 puede reconstruirse desde los CSV del manifiesto con la
+misma ruta que usa el A/B:
+
+    python -m mibici.monitoreo_p1 --desde-csv --destino reports/drift_csv
+
+Esta ruta descarga o reutiliza los doce CSV históricos y verifica sus hashes,
+conteos de limpieza y la cohorte de estaciones contra el manifiesto. No lee ni
+modifica los Parquet. Exige el mismo número de filas de referencia que el run
+documentado. `--destino` evita sobrescribir la evidencia versionada en
+reports/drift; el resumen registra `"preparacion": "csv_congelados_solo_p1"`. El mes actual debe
 ser contiguo al periodo congelado; otros meses requieren proporcionar antes su
 contexto histórico.
 
