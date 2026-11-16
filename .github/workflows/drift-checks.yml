@@ -41,3 +41,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_drift.py' -v
       - name: Test P1 monitoring and Evidently integration
         run: python -m unittest discover -s tests -p 'test_monitoreo_p1.py' -v
+      - name: Test offline A/B and temporary Model Registry
+        run: python -m pytest tests/test_ab_testing.py -q
