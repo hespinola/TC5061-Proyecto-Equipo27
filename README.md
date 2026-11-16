@@ -1155,4 +1155,16 @@ Desde el subdirectorio del proyecto, con su entorno activado:
 
     python -m mibici.monitoreo_p1
 
-Las métricas reales y la trazabilidad se generan en reports/drift. La comparación de modelos y Continuous Training corresponden a pasos posteriores.
+Las métricas reales y la trazabilidad del monitoreo se generan en reports/drift.
+
+### Versión alternativa y comparación A/B de P1
+
+`mibici.ab_testing` reconstruye el HGB documentado y registra una alternativa
+reentrenada hasta el 14 de octubre de 2026 bajo el mismo nombre en MLflow.
+Compara las dos versiones sobre octubre 15–31, separado de ambos entrenamientos,
+con MAE, RMSE y diagnósticos diarios. La regla de recomendación se fija antes de
+evaluar; no se cambia automáticamente el alias `champion`.
+
+Consultar el [protocolo, límites y comandos de reproducción](tec-mlops-equipo-27/references/ab-testing-p1.md).
+La evidencia de ejecución se genera en `reports/ab_testing/resultados_p1.json`.
+El informe integrado de drift, A/B y Continuous Training es un entregable posterior.

@@ -1,0 +1,279 @@
+{
+  "fecha_utc": "2026-11-16T01:22:14.248566+00:00",
+  "modelo": "mibici-equipo27-p1-demanda",
+  "tracking_uri": "sqlite:///.cache/ab_testing/mlflow.db",
+  "comparacion_run_id": "154915f09f7540838068073e3616e8e8",
+  "protocolo": {
+    "evaluacion_inicio": "2026-10-15 00:00:00",
+    "evaluacion_fin": "2026-10-31 23:00:00",
+    "evaluacion_sha256": "e692ab9e4f168da24d903a33a726bb11051ee84ad6eca50e6a67864f9fbd0bdb",
+    "regla": "B si mejora MAE al menos 1% y no empeora RMSE; en otro caso conservar A",
+    "hiperparametros": {
+      "n_estimators": 160,
+      "max_depth": 8,
+      "learning_rate": 0.08
+    },
+    "semilla": 42,
+    "inferencia": "inicio de cada hora con observaciones anteriores; recorte a 0 y 4 decimales"
+  },
+  "trazabilidad": {
+    "modelo_original_documentado": {
+      "name": "mibici-equipo27-p1-demanda",
+      "version": "1",
+      "alias": "champion",
+      "uri": "models:/mibici-equipo27-p1-demanda@champion",
+      "run_id": "683b78f7fe9643be9b7496a77c951e58",
+      "model_uri": "models:/m-e1de7c54c2b34622b72882cf2ba33c65",
+      "source_commit": "9cd40eb0af9feed8bcbf6048a74292e04b8709c2",
+      "data_version": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+      "load_by_alias_verified": true,
+      "prediction_parity_verified": true,
+      "example_rows": 5,
+      "selection": {
+        "metric": "validation_mae",
+        "best_validation_value": 0.7192116820951295,
+        "tolerance": 0.007192116820951296,
+        "near_tie_run_ids": [
+          "d78849fea1ff4bf6a8dcceafddb3658d",
+          "683b78f7fe9643be9b7496a77c951e58"
+        ],
+        "test_used_for_selection": false,
+        "tie_break": "menor dispersión MAE semanal; menor tamaño"
+      }
+    },
+    "data_version_historica": "ea4e65629d4c5f0565956bdb37c17920b8529a7a1308fd6ba7ecb74429f231d1",
+    "sha256_manifiesto": "2fd5e3b259e3bdc51aed1adc27c7009bb6ed491541a055b884a891060d473d30",
+    "preparacion": "csv_congelados_solo_p1",
+    "csv_actual": {
+      "originales": 635532,
+      "invalidos": 0,
+      "fuera_periodo": 0,
+      "duplicados": 0,
+      "validos": 635532,
+      "archivo": "datos_abiertos_2026_10.csv",
+      "sha256": "0cdfb05299e6db658ac9cc7723494a9704b0749e3671c29c8566826ea889b900",
+      "bytes": 55222199,
+      "codificacion": "utf-8-sig"
+    },
+    "cobertura": {
+      "estaciones_cohorte": 471,
+      "estaciones_nuevas_fuera_cohorte": [
+        124,
+        492
+      ],
+      "estaciones_cohorte_sin_viajes_del_mes": [
+        175,
+        405,
+        407
+      ],
+      "salidas_en_cohorte": 635356,
+      "salidas_fuera_cohorte": 176,
+      "llegadas_historicas_en_mes": 16,
+      "filas_estacion_hora": 350424,
+      "horas_por_estacion": 744
+    },
+    "codigo_sha256": {
+      "mibici/ab_testing.py": "80d8f1cab5842de21e07441464a5768d552acc1b60e4b46240e04bf2c90f92a1",
+      "mibici/config.py": "95ae35b8b48aaf2156458f3f04a911503b7bcdfbf40f89dbe96aa76916dfd4ad",
+      "mibici/preparar.py": "bcc6efe58ed9ea0caa112b70d9781fffe5a2dab6f14820475afee82f65810d93",
+      "mibici/features.py": "66ecf0e514aa99708b89df756a84cc982bb8925d8cf93b60bed7672cd6e17870",
+      "mibici/drift.py": "44195d3290e8b0e3345ced9a20d8301c96931b07a7a6ff506e83339b0c13c261",
+      "mibici/monitoreo_p1.py": "13dee89b51991e3d2674c20c1e5e40e1d447daea09b282505d0487830652c34b"
+    },
+    "entrenamiento": {
+      "A": {
+        "filas": 3006864,
+        "sha256": "c9b5cfe5d56e6444c3ba83dcdad87751e7faf679be1c98ce2811c1582263e355",
+        "inicio": "2025-10-08 00:00:00",
+        "fin": "2026-06-30 23:00:00"
+      },
+      "B": {
+        "filas": 4205088,
+        "sha256": "8063450e122ba8e16eaf01e05fb72ede24375bbfc5396b85fd8452b2f5261ec3",
+        "inicio": "2025-10-08 00:00:00",
+        "fin": "2026-10-14 23:00:00"
+      }
+    }
+  },
+  "resultados": {
+    "A": {
+      "version": "1",
+      "uri": "models:/mibici-equipo27-p1-demanda/1",
+      "mae": 0.9982836143374547,
+      "rmse": 1.7521601346378526,
+      "filas": 192168,
+      "evaluacion_sha256": "e692ab9e4f168da24d903a33a726bb11051ee84ad6eca50e6a67864f9fbd0bdb",
+      "run_id": "7550a13afb87449d9405517af5865da1"
+    },
+    "B": {
+      "version": "2",
+      "uri": "models:/mibici-equipo27-p1-demanda/2",
+      "mae": 0.9985628673868697,
+      "rmse": 1.7525615582336767,
+      "filas": 192168,
+      "evaluacion_sha256": "e692ab9e4f168da24d903a33a726bb11051ee84ad6eca50e6a67864f9fbd0bdb",
+      "run_id": "95531ac048284cb494920fdde7b5ac9d"
+    }
+  },
+  "metricas_diarias": [
+    {
+      "dia": "2026-10-15",
+      "filas": 11304,
+      "mae_A": 1.0253958333333333,
+      "rmse_A": 1.7390573444452913,
+      "mae_B": 1.021181254423213,
+      "rmse_B": 1.722642608574491
+    },
+    {
+      "dia": "2026-10-16",
+      "filas": 11304,
+      "mae_A": 1.012719541755131,
+      "rmse_A": 1.7288770551016448,
+      "mae_B": 1.0074734872611464,
+      "rmse_B": 1.70026399468377
+    },
+    {
+      "dia": "2026-10-17",
+      "filas": 11304,
+      "mae_A": 0.9295060067232839,
+      "rmse_A": 1.7012320317483454,
+      "mae_B": 0.9347793524416136,
+      "rmse_B": 1.8070009032962455
+    },
+    {
+      "dia": "2026-10-18",
+      "filas": 11304,
+      "mae_A": 0.9342596691436659,
+      "rmse_A": 1.9078012832606557,
+      "mae_B": 0.9429869072894552,
+      "rmse_B": 1.91319194721672
+    },
+    {
+      "dia": "2026-10-19",
+      "filas": 11304,
+      "mae_A": 1.1285990799716916,
+      "rmse_A": 2.1335697949311463,
+      "mae_B": 1.1195766188959662,
+      "rmse_B": 2.102866561743628
+    },
+    {
+      "dia": "2026-10-20",
+      "filas": 11304,
+      "mae_A": 1.0552591914366596,
+      "rmse_A": 1.8116987105930271,
+      "mae_B": 1.0478056705590941,
+      "rmse_B": 1.7781530715016933
+    },
+    {
+      "dia": "2026-10-21",
+      "filas": 11304,
+      "mae_A": 1.0348021319886767,
+      "rmse_A": 1.7406318323072707,
+      "mae_B": 1.0303948071479123,
+      "rmse_B": 1.7274800776274124
+    },
+    {
+      "dia": "2026-10-22",
+      "filas": 11304,
+      "mae_A": 1.017512756546355,
+      "rmse_A": 1.737168137006727,
+      "mae_B": 1.0179946744515216,
+      "rmse_B": 1.731139585573083
+    },
+    {
+      "dia": "2026-10-23",
+      "filas": 11304,
+      "mae_A": 0.9810525831564049,
+      "rmse_A": 1.6390367052420067,
+      "mae_B": 0.9886266454352443,
+      "rmse_B": 1.6472062745525637
+    },
+    {
+      "dia": "2026-10-24",
+      "filas": 11304,
+      "mae_A": 0.8944975141542817,
+      "rmse_A": 1.5271391315686529,
+      "mae_B": 0.8999783527954707,
+      "rmse_B": 1.5650404389648735
+    },
+    {
+      "dia": "2026-10-25",
+      "filas": 11304,
+      "mae_A": 0.9082308917197452,
+      "rmse_A": 1.7873124853605058,
+      "mae_B": 0.9137901627742392,
+      "rmse_B": 1.7766314582737621
+    },
+    {
+      "dia": "2026-10-26",
+      "filas": 11304,
+      "mae_A": 1.0380120753715498,
+      "rmse_A": 1.7658545348406947,
+      "mae_B": 1.0290754600141543,
+      "rmse_B": 1.7385453219600575
+    },
+    {
+      "dia": "2026-10-27",
+      "filas": 11304,
+      "mae_A": 1.0459235491861287,
+      "rmse_A": 1.73357091077923,
+      "mae_B": 1.0438900212314224,
+      "rmse_B": 1.7235728400185504
+    },
+    {
+      "dia": "2026-10-28",
+      "filas": 11304,
+      "mae_A": 1.0109696125265395,
+      "rmse_A": 1.7024027256082361,
+      "mae_B": 1.0108895966029723,
+      "rmse_B": 1.7030563582836729
+    },
+    {
+      "dia": "2026-10-29",
+      "filas": 11304,
+      "mae_A": 1.0407600406935598,
+      "rmse_A": 1.8183631386339891,
+      "mae_B": 1.0416775212314224,
+      "rmse_B": 1.8097113071062239
+    },
+    {
+      "dia": "2026-10-30",
+      "filas": 11304,
+      "mae_A": 1.0075052105449398,
+      "rmse_A": 1.686975756763406,
+      "mae_B": 1.0065605360934182,
+      "rmse_B": 1.662245739287796
+    },
+    {
+      "dia": "2026-10-31",
+      "filas": 11304,
+      "mae_A": 0.9058157554847841,
+      "rmse_A": 1.5410554816834157,
+      "mae_B": 0.9188876769285208,
+      "rmse_B": 1.6172031683113988
+    }
+  ],
+  "decision": {
+    "recomendacion": "A",
+    "mejora_relativa_mae_b": -0.00027973317943352484,
+    "regla": "B si mejora MAE al menos 1% y no empeora RMSE; en otro caso conservar A",
+    "promocion_automatica": false,
+    "version_recomendada": "1"
+  },
+  "entorno": {
+    "python": "3.14.5",
+    "mlflow": "3.17.1",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "pyarrow": "25.0.1"
+  },
+  "limitaciones": [
+    "Comparación offline, no asignación aleatoria de tráfico en producción.",
+    "A se reconstruye; no se afirma identidad con el artefacto original del equipo.",
+    "B incorpora julio-septiembre y octubre 1-14; el test histórico deja de ser holdout para B.",
+    "Un solo holdout de 17 días no demuestra superioridad causal ni permanente.",
+    "Misma cohorte original; estaciones nuevas quedan fuera. Ceros no prueban operación.",
+    "No se modifica champion. La versión recomendada requiere revisión antes de promoción."
+  ]
+}
