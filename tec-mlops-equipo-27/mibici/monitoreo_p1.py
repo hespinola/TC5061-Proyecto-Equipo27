@@ -3,6 +3,7 @@
 import argparse
 from importlib.metadata import version
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -218,8 +219,14 @@ def ejecutar(
     muestra=MUESTRA_MONITOREO_P1,
     umbral=UMBRAL_MONITOREO_P1,
     proporcion=PROPORCION_MONITOREO_P1,
+    desde_csv=False,
+    destino=None,
 ):
-    """Genera reportes y evidencia; no entrena modelos ni consulta un alias mutable."""
+    """Genera reportes y evidencia; no entrena modelos ni consulta un alias mutable.
+
+    Con ``desde_csv`` el histórico se reconstruye desde los CSV congelados del
+    manifiesto (misma ruta que el A/B), sin requerir los Parquet de la ingesta.
+    """
     from evidently import Report
     from evidently.presets import DataDriftPreset, DataSummaryPreset
 
@@ -228,7 +235,10 @@ def ejecutar(
     if not np.isfinite(umbral) or umbral <= 0 or not 0 < proporcion <= 1:
         raise ValueError("Umbral y proporción de drift fuera de rango.")
     inicio, fin = limites_mes(mes)
-    manifest = verificar_datos()
+    if desde_csv:
+        manifest = json.loads(DATA_MANIFEST_PATH.read_text(encoding="utf-8"))
+    else:
+        manifest = verificar_datos()
     hash_manifiesto = sha256_archivo(DATA_MANIFEST_PATH)
     if inicio != pd.Timestamp(manifest["fin_exclusivo"]):
         raise ValueError(
@@ -247,8 +257,14 @@ def ejecutar(
             f"Revisar cobertura del CSV: días sin viajes registrados={sorted(esperados - dias)}."
         )
 
-    # La preparación original se ejecuta con la escritura del panel desactivada.
-    historico = preparar(guardar=False)
+    if desde_csv:
+        # Import diferido: ab_testing importa este módulo.
+        from mibici.ab_testing import historico_desde_csv
+
+        historico, arrastres_csv = historico_desde_csv(manifest)
+    else:
+        # La preparación original se ejecuta con la escritura del panel desactivada.
+        historico = preparar(guardar=False)
     corte = pd.Timestamp(FIN_ENTRENAMIENTO) + pd.Timedelta(days=1)
     referencia_base = historico.loc[
         historico.periodo < corte, CLAVES + ["salidas", *FEATURES_P1]
@@ -267,11 +283,16 @@ def ejecutar(
         CLAVES + CONTEOS,
     ].copy()
     del historico
-    arrastres = pd.read_parquet(
-        PROCESSED_DATA_DIR / "viajes.parquet",
-        columns=["fin_del_viaje", "destino_id"],
-        filters=[("fin_del_viaje", ">=", inicio), ("fin_del_viaje", "<", fin)],
-    )
+    if desde_csv:
+        arrastres = arrastres_csv.loc[
+            (arrastres_csv.fin_del_viaje >= inicio) & (arrastres_csv.fin_del_viaje < fin)
+        ].reset_index(drop=True)
+    else:
+        arrastres = pd.read_parquet(
+            PROCESSED_DATA_DIR / "viajes.parquet",
+            columns=["fin_del_viaje", "destino_id"],
+            filters=[("fin_del_viaje", ">=", inicio), ("fin_del_viaje", "<", fin)],
+        )
     actual_base, cobertura = construir_actual(nuevo, contexto, arrastres, inicio, fin)
     faltantes_actual = actual_base[list(FEATURES_P1)].isna().sum()
     actual = actual_base.dropna(subset=[*FEATURES_P1, "salidas"]).reset_index(drop=True)
@@ -289,7 +310,7 @@ def ejecutar(
     ds_ref = crear_dataset_p1(referencia, muestra)
     ds_actual = crear_dataset_p1(actual, muestra)
     ds_control = crear_dataset_p1(control, muestra)
-    destino = REPORTS_DIR / "drift"
+    destino = REPORTS_DIR / "drift" if destino is None else Path(destino)
     destino.mkdir(parents=True, exist_ok=True)
     archivos = {}
     calidad_path = destino / f"calidad_p1_{mes}_vs_entrenamiento.html"
@@ -322,7 +343,8 @@ def ejecutar(
     figura = destino / f"drift_p1_{mes}.png"
     _guardar_grafica(tabla, figura, umbral)
     archivos["grafica_png"] = figura
-    verificar_datos()
+    if not desde_csv:
+        verificar_datos()
     if sha256_archivo(DATA_MANIFEST_PATH) != hash_manifiesto:
         raise ValueError("El manifiesto cambió durante la ejecución.")
 
@@ -338,6 +360,7 @@ def ejecutar(
         "hiperparametros_modelo": resultado_modelo["hp"],
         "data_version_referencia": manifest["data_version"],
         "sha256_manifiesto": hash_manifiesto,
+        "preparacion": "csv_congelados_solo_p1" if desde_csv else "parquet_ingesta_completa",
         "archivo_actual": stats,
         "periodos": {
             "referencia_inicio": manifest["inicio"],
@@ -390,9 +413,7 @@ def ejecutar(
         "codigo_sha256": {
             str(path.relative_to(PROJ_ROOT)): sha256_archivo(path) for path in fuentes_codigo
         },
-        "archivos": {
-            nombre: str(path.relative_to(PROJ_ROOT)) for nombre, path in archivos.items()
-        },
+        "archivos": {nombre: _ruta_relativa(path) for nombre, path in archivos.items()},
         "limitaciones": [
             "Se monitorea la cohorte de estaciones del panel original; las nuevas se reportan aparte.",
             "Una hora sin viajes observados se representa con cero como en el pipeline original.",
@@ -416,12 +437,35 @@ def ejecutar(
     return resumen
 
 
+def _ruta_relativa(path):
+    path = Path(path).resolve()
+    try:
+        return str(path.relative_to(PROJ_ROOT))
+    except ValueError:
+        return str(path)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mes", default=MES_NUEVO)
     parser.add_argument("--muestra", type=int, default=MUESTRA_MONITOREO_P1)
+    parser.add_argument(
+        "--desde-csv",
+        action="store_true",
+        help="Reconstruye el histórico desde los CSV del manifiesto, sin Parquet congelados.",
+    )
+    parser.add_argument(
+        "--destino",
+        default=None,
+        help="Carpeta de salida (por defecto reports/drift).",
+    )
     args = parser.parse_args()
-    ejecutar(mes=args.mes, muestra=None if args.muestra == 0 else args.muestra)
+    ejecutar(
+        mes=args.mes,
+        muestra=None if args.muestra == 0 else args.muestra,
+        desde_csv=args.desde_csv,
+        destino=args.destino,
+    )
 
 
 if __name__ == "__main__":

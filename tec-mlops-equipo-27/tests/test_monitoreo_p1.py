@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 
 from mibici import drift
@@ -284,6 +285,92 @@ class EvidentlyIntegracionTests(unittest.TestCase):
         self.assertFalse(tabla.loc["dia_semana", "drift"])
         self.assertFalse(tabla.drift.isna().any())
         self.assertFalse(tabla.metodo.isna().any())
+
+
+class MonitoreoDesdeCsvTests(unittest.TestCase):
+    """La ruta --desde-csv no toca Parquet congelados y produce los mismos artefactos."""
+
+    def _historico(self):
+        from mibici import features as f
+
+        rng = np.random.default_rng(0)
+        horas = pd.date_range("2025-10-01", "2026-10-01", freq="h", inclusive="left")
+        panel = pd.MultiIndex.from_product(
+            [[1, 2], horas], names=["estacion_id", "periodo"]
+        ).to_frame(index=False)
+        panel["salidas"] = rng.poisson(2, len(panel))
+        panel["llegadas"] = rng.poisson(2, len(panel))
+        panel = f.agregar_variables_calendario(panel)
+        panel = f.agregar_rezagos(panel)
+        panel = f.agregar_promedios_moviles(panel)
+        arrastres = pd.DataFrame(
+            {
+                "fin_del_viaje": pd.to_datetime(["2026-10-01 00:03"]),
+                "destino_id": [2],
+            }
+        )
+        return panel, arrastres
+
+    def _octubre(self):
+        dias = pd.date_range("2026-10-01 08:00", periods=31, freq="D")
+        nuevo = pd.DataFrame(
+            {
+                "viaje_id": range(1, 63),
+                "inicio_del_viaje": list(dias) * 2,
+                "fin_del_viaje": [d + pd.Timedelta(minutes=10) for d in dias] * 2,
+                "origen_id": [1] * 31 + [2] * 31,
+                "destino_id": [2] * 31 + [1] * 31,
+            }
+        )
+        stats = {"validos": len(nuevo), "sha256": "x", "archivo": "datos_abiertos_2026_10.csv"}
+        return nuevo, stats
+
+    def test_desde_csv_genera_reportes_sin_parquet_ni_verificacion_congelada(self):
+        from mibici import monitoreo_p1 as m
+
+        historico, arrastres = self._historico()
+        corte = pd.Timestamp(FIN_ENTRENAMIENTO) + pd.Timedelta(days=1)
+        filas_ref = int(
+            historico.loc[historico.periodo < corte]
+            .dropna(subset=[*FEATURES_P1, "salidas"])
+            .shape[0]
+        )
+        modelo = {
+            "name": "modelo",
+            "version": "1",
+            "run_id": "r",
+            "source_commit": "c",
+            "data_version": "d",
+        }
+        corrida = {"metricas": {"train_filas": filas_ref}, "hp": {"max_depth": 8}}
+        prohibido = AssertionError("La ruta CSV no debe usar los Parquet congelados.")
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch(
+                "mibici.ab_testing.historico_desde_csv", return_value=(historico, arrastres)
+            ) as reconstruir,
+            patch.object(m, "_modelo_documentado", return_value=(modelo, corrida)),
+            patch.object(m.drift, "descargar_mes"),
+            patch.object(m.drift, "cargar_mes", return_value=self._octubre()),
+            patch.object(m, "verificar_datos", side_effect=prohibido),
+            patch.object(m, "preparar", side_effect=prohibido),
+            patch.object(m.pd, "read_parquet", side_effect=prohibido),
+        ):
+            resumen = m.ejecutar(muestra=None, desde_csv=True, destino=tmp)
+            reconstruir.assert_called_once()
+            salida = Path(tmp)
+            for nombre in (
+                "calidad_p1_2026-10_vs_entrenamiento.html",
+                "drift_p1_2026-10_vs_entrenamiento.html",
+                "drift_p1_2026-10_vs_2025-10.html",
+                "drift_p1_2026-10.png",
+                "resumen_p1_2026-10.json",
+            ):
+                self.assertTrue((salida / nombre).exists(), nombre)
+        self.assertEqual(resumen["preparacion"], "csv_congelados_solo_p1")
+        self.assertEqual(resumen["filas"]["referencia_elegibles"], filas_ref)
+        self.assertEqual(resumen["filas"]["actual_elegibles"], 2 * 31 * 24)
+        self.assertEqual(len(resumen["drift_por_variable"]), len(FEATURES_P1))
 
 
 if __name__ == "__main__":
