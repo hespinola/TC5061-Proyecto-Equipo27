@@ -1,0 +1,118 @@
+# Orquestación de MiBici (Equipo 27): servidor de MLflow + API de predicción.
+#
+# Funciona igual con Docker Compose y con podman-compose:
+#   make up                                   (prepara modelo_p1/ si falta y levanta todo)
+#   docker compose up --build -d              o   podman-compose up --build -d
+#
+# Los puertos y límites de recursos se pueden ajustar con variables de entorno o un
+# archivo .env junto a este compose (ver "Variables" en el README).
+
+# Nombre del proyecto (agrupa contenedores, red y volúmenes)
+name: mibici-equipo27
+
+# Ambos servicios comparten la imagen construida con el Containerfile del repositorio
+x-imagen: &imagen
+  build:
+    context: .
+    dockerfile: Containerfile
+  image: localhost/mibici-api:1.0.0
+
+services:
+  # ----------------------------------------------------------------------------
+  # Servicio 1: servidor de seguimiento y Model Registry (MLflow)
+  # ----------------------------------------------------------------------------
+  mlflow:
+    <<: *imagen
+    container_name: mibici-mlflow
+    # En Podman rootless equivale al usuario local y evita errores de permisos al
+    # escribir en el volumen /mlflow
+    user: "0:0"
+    command:
+      - python
+      - -m
+      - mlflow
+      - server
+      # Base de datos SQLite para experimentos, métricas y Model Registry
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      # Directorio interno donde se almacenan los artefactos de los modelos
+      - --artifacts-destination
+      - /mlflow/mlartifacts
+      - --serve-artifacts
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      # Un solo worker evita bloqueos de escritura en SQLite y reduce la RAM
+      - --workers
+      - "1"
+      # Cabeceras Host aceptadas por MLflow 3 (anfitrión y red interna)
+      - --allowed-hosts
+      - "mlflow:5000,mlflow,127.0.0.1:5000,localhost:5000"
+    ports:
+      - "127.0.0.1:${MLFLOW_PUERTO:-5000}:5000"
+    # Volumen administrado: existe aunque el repositorio se acabe de clonar
+    # (un bind mount a ./mlflow.db falla si el archivo no existe en el anfitrión)
+    volumes:
+      - mlflow_store:/mlflow
+    networks:
+      - mibici
+    cpus: ${MLFLOW_CPUS:-1.0}
+    mem_limit: ${MLFLOW_MEMORIA:-1g}
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Servicio 2: API REST de inferencia (FastAPI / Uvicorn)
+  # ----------------------------------------------------------------------------
+  api:
+    <<: *imagen
+    container_name: mibici-api
+    environment:
+      # Modelo empaquetado en la imagen (copiado de modelo_p1/ en el Containerfile).
+      # Para servir desde el Model Registry del servicio mlflow, definir
+      # API_MODELO_RUTA= (vacía) y, si hace falta, API_MODELO_ALIAS.
+      # Se usan nombres API_* para no heredar MODELO_RUTA del entorno local.
+      MODELO_RUTA: ${API_MODELO_RUTA-/opt/models/p1}
+      MODELO_NOMBRE: mibici-equipo27-p1-demanda
+      MODELO_ALIAS: ${API_MODELO_ALIAS:-champion}
+      # Dentro de la red de compose, MLflow se resuelve por nombre de servicio
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    ports:
+      - "127.0.0.1:${API_PUERTO:-8000}:8000"
+    networks:
+      - mibici
+    # Límites explícitos: hacen reproducible la prueba de carga y son la base del
+    # cálculo de costo por inferencia (FinOps)
+    cpus: ${API_CPUS:-1.0}
+    mem_limit: ${API_MEMORIA:-1g}
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"
+      interval: 10s
+      timeout: 6s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+
+networks:
+  mibici:
+    name: mibici-equipo27-red
+
+volumes:
+  mlflow_store:
