@@ -194,6 +194,7 @@ cython_debug/
 # ---------------------------------------------------------------------------
 # Datos de MiBici en cualquier formato, aunque queden fuera de data/.
 *.csv
+!/reports/carga/**/*.csv
 *.parquet
 
 # MLflow: runs, artefactos y base local de tracking.
