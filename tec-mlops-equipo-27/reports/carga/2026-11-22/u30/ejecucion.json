@@ -1,0 +1,60 @@
+{
+  "inicio_utc": "2026-11-23T01:27:39.422734+00:00",
+  "parametros": {
+    "motor": "docker",
+    "host": "http://127.0.0.1:8000",
+    "usuarios": 30,
+    "tasa": 5.0,
+    "segundos": 120,
+    "intervalo": 2,
+    "destino": "C:\\Users\\super\\Documents\\Maestria\\MLOPSProject\\tec-mlops-equipo-27\\tec-mlops-equipo-27\\reports\\carga\\2026-11-22\\u30"
+  },
+  "health": {
+    "estado": "ok",
+    "modelo": {
+      "nombre": "mibici-equipo27-p1-demanda",
+      "version": "1",
+      "alias": null,
+      "uri": "/opt/models/p1",
+      "run_id": "7550a13afb87449d9405517af5865da1",
+      "origen": "local"
+    },
+    "detalle": null
+  },
+  "python": "3.13.18 (main, Oct 26 2026, 14:10:48) [MSC v.1944 64 bit (AMD64)]",
+  "locust": "locust 2.47.0 from C:\\Users\\super\\Documents\\Maestria\\MLOPSProject\\tec-mlops-equipo-27\\tec-mlops-equipo-27\\.cache\\load-venv\\Lib\\site-packages\\locust (Python 3.13.18)",
+  "motor": "{\"Platform\":{\"Name\":\"Docker Desktop 4.81.0 (232925)\"},\"Version\":\"29.6.1\",\"ApiVersion\":\"1.55\",\"MinAPIVersion\":\"1.40\",\"Os\":\"linux\",\"Arch\":\"amd64\",\"Components\":[{\"Name\":\"Engine\",\"Version\":\"29.6.1\",\"Details\":{\"ApiVersion\":\"1.55\",\"Arch\":\"amd64\",\"BuildTime\":\"Fri Jun 26 11:41:04 2026\",\"Experimental\":\"false\",\"GitCommit\":\"8ec5ab3\",\"GoVersion\":\"go1.26.4\",\"KernelVersion\":\"6.18.33.2-microsoft-standard-WSL2\",\"MinAPIVersion\":\"1.40\",\"Module\":\"github.com/moby/moby/v2\",\"ModuleVersion\":\"v2.0.0+unknown\",\"Os\":\"linux\"}},{\"Name\":\"containerd\",\"Version\":\"v2.2.5\",\"Details\":{\"GitCommit\":\"e53c7c1516c3b2bff98eb76f1f4117477e6f4e66\"}},{\"Name\":\"runc\",\"Version\":\"1.3.6\",\"Details\":{\"GitCommit\":\"v1.3.6-0-g491b69ba\"}},{\"Name\":\"docker-init\",\"Version\":\"0.19.0\",\"Details\":{\"GitCommit\":\"de40ad0\"}}],\"GitCommit\":\"8ec5ab3\",\"GoVersion\":\"go1.26.4\",\"KernelVersion\":\"6.18.33.2-microsoft-standard-WSL2\",\"BuildTime\":\"2026-06-26T11:41:04.000000000+00:00\"}\n",
+  "recursos_motor": "16 CPU; 16323862528 bytes RAM\n",
+  "commit": "a0da3d324e4ec96473a60da0fba0fa8c506cfc68",
+  "codigo_sha256": {
+    "ejecutar.py": "328fd3f0f8ad7994b344e52a6f1c24f03c3de4b1eae5661ddfca1dd9b4f3f10a",
+    "locustfile.py": "149dd0cf35cfcd3df4d0a298995119ad3ff97153073521bfd38c6dcf86e78fbb"
+  },
+  "contenedores": [
+    {
+      "nombre": "/mibici-api",
+      "imagen": "sha256:7ca7865b568e7ed6d0e8837d615b7d20bacac66532481e9e7f3da3afc93913a4",
+      "limites": {
+        "Memory": 1073741824,
+        "NanoCpus": 1000000000,
+        "CpuQuota": 0,
+        "CpuPeriod": 0
+      }
+    },
+    {
+      "nombre": "/mibici-mlflow",
+      "imagen": "sha256:7ca7865b568e7ed6d0e8837d615b7d20bacac66532481e9e7f3da3afc93913a4",
+      "limites": {
+        "Memory": 1073741824,
+        "NanoCpus": 1000000000,
+        "CpuQuota": 0,
+        "CpuPeriod": 0
+      }
+    }
+  ],
+  "alcance": "Modelo cerrado; payload fijo; incluye rampa; sin calentamiento excluido. Generador y contenedores comparten anfitri\u00f3n. No determina capacidad m\u00e1xima.",
+  "fin_utc": "2026-11-23T01:29:43.871543+00:00",
+  "duracion_observada_s": 123.39809430000605,
+  "locust_exit_code": 0,
+  "errores_muestreo": []
+}

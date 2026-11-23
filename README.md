@@ -1292,3 +1292,14 @@ python scripts/modelo_demo.py --destino modelo_p1          # o make modelo
 docker compose -f docker-compose.yml up -d --build --wait  # job imagen-y-compose
 docker compose -f docker-compose.yml down -v
 ```
+
+### Partes 3 y 4 · Locust y recursos durante la carga
+
+El escenario de Locust envía una inferencia por petición a `/predict/demanda`
+y valida las respuestas. El runner captura CPU y memoria de API y MLflow
+durante la ejecución y exporta CSV, metadatos, el HTML de Locust y gráficas PNG.
+
+Consultar [preparación, comandos y alcance de las mediciones](tec-mlops-equipo-27/load_tests/README.md).
+Las dependencias de carga se instalan por separado con `requirements-load.txt`.
+Las evidencias se guardan en `tec-mlops-equipo-27/reports/carga/`; el análisis
+FinOps y el reporte integrado corresponden a las partes 5 y 6.
