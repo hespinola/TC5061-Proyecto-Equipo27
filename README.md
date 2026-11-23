@@ -1144,6 +1144,9 @@ iniciar el contenedor, esperar un 200 de `/health` y verificar una respuesta
 válida de `/predict/demanda`. Los resultados locales anteriores no constituyen
 evidencia de ese job.
 
+> Actualización (Entregable 7): este job ya existe en
+> [CI/CD](.github/workflows/ci-cd.yml); ver *Entregable 7 · Parte 2*.
+
 ## Monitoreo de P1: Entregable 8
 
 El monitoreo compara las entradas por estación y hora del modelo P1 con un periodo posterior y conserva el análisis de viajes como complemento.
@@ -1241,3 +1244,62 @@ curl --fail-with-body http://127.0.0.1:5000/health
 
 Las variables de la API llevan el prefijo `API_` para no heredar `MODELO_RUTA` u otras
 variables definidas en la terminal para la ejecución local.
+
+### Parte 2. Pipeline de CI/CD con GitHub Actions
+
+[![CI/CD](https://github.com/hespinola/TC5061-Proyecto-Equipo27/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/hespinola/TC5061-Proyecto-Equipo27/actions/workflows/ci-cd.yml)
+
+El workflow [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml) se ejecuta en
+cada **pull request**, en cada **push a `main`** y de forma manual (*Run workflow*):
+
+```text
+pruebas (matriz, en paralelo)              imagen-y-compose (needs: pruebas)
+├─ api                    52 pruebas  ──►  modelo_p1 de demostración
+├─ datos y monitoreo     188 pruebas       docker build (caché de capas)
+└─ modelado y registry    99 pruebas       docker compose up --wait (MLflow + API)
+                                           /health, /predict/demanda, 422, docker stats
+                                           evidencia como artefacto · compose down
+```
+
+| Job | Qué hace | Optimizaciones |
+|---|---|---|
+| `pruebas` | Instala `requirements.txt`, corre `pip check` y `pytest` por grupo | Matriz de 3 grupos en paralelo; caché de pip; `fail-fast: false` |
+| `imagen-y-compose` | Genera `modelo_p1/`, construye `localhost/mibici-api:1.0.0`, levanta `docker-compose.yml` y prueba los endpoints | Caché de capas de Docker (`type=gha`); `--wait` usa los healthchecks; logs automáticos si falla |
+
+Además:
+
+- Un push nuevo a la misma rama cancela la corrida anterior (`concurrency`).
+- Las acciones están fijadas por SHA y el token es de solo lectura, igual que en `security.yml`.
+- El grupo *modelado y registry* corre todo lo que no está en los otros dos, así que
+  cualquier archivo de pruebas nuevo entra solo al pipeline.
+
+**Modelo en CI.** `modelo_p1/` no se versiona y en GitHub no existe el registry del
+equipo, así que el job genera el modelo de demostración
+(`scripts/modelo_demo.py`): misma firma de P1 y datos sintéticos. El pipeline valida
+que la imagen se construye y que el sistema completo responde; no evalúa la calidad
+del modelo, que ya cubren las pruebas y los reportes de MLflow.
+
+**Evidencia.** Cada corrida publica en su resumen la tabla de `docker stats` y deja el
+artefacto `evidencia-compose` con `compose-ps.txt`, `mlflow-health.txt`,
+`api-health.json`, `prediccion.json` y `docker-stats.txt`. Para verla, abrir la
+pestaña **Actions**, elegir una corrida de *CI/CD* e ir a **Summary**.
+
+**Reproducir en local** (desde `tec-mlops-equipo-27/`, con el entorno activado):
+
+```bash
+python -m pytest -q                                        # job pruebas
+python scripts/modelo_demo.py --destino modelo_p1          # o make modelo
+docker compose -f docker-compose.yml up -d --build --wait  # job imagen-y-compose
+docker compose -f docker-compose.yml down -v
+```
+
+### Partes 3 y 4 · Locust y recursos durante la carga
+
+El escenario de Locust envía una inferencia por petición a `/predict/demanda`
+y valida las respuestas. El runner captura CPU y memoria de API y MLflow
+durante la ejecución y exporta CSV, metadatos, el HTML de Locust y gráficas PNG.
+
+Consultar [preparación, comandos y alcance de las mediciones](tec-mlops-equipo-27/load_tests/README.md).
+Las dependencias de carga se instalan por separado con `requirements-load.txt`.
+Las evidencias se guardan en `tec-mlops-equipo-27/reports/carga/`; el análisis
+FinOps y el reporte integrado corresponden a las partes 5 y 6.

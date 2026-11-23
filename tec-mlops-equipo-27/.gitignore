@@ -194,6 +194,7 @@ cython_debug/
 # ---------------------------------------------------------------------------
 # Datos de MiBici en cualquier formato, aunque queden fuera de data/.
 *.csv
+!/reports/carga/**/*.csv
 *.parquet
 
 # MLflow: runs, artefactos y base local de tracking.
@@ -227,3 +228,6 @@ mlflow.db-*
 # Los CSV de drift por variable ya quedan fuera de Git por la regla *.csv.
 /reports/drift/*.html
 /reports/drift_csv/
+
+# Evidencia que genera el job imagen-y-compose de CI/CD
+/evidencia/
