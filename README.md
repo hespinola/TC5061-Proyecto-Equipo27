@@ -1168,3 +1168,76 @@ evaluar; no se cambia automáticamente el alias `champion`.
 Consultar el [protocolo, límites y comandos de reproducción](tec-mlops-equipo-27/references/ab-testing-p1.md).
 La evidencia de ejecución se genera en `reports/ab_testing/resultados_p1.json`.
 El informe integrado de drift, A/B y Continuous Training es un entregable posterior.
+
+## Entregable 7 · Microservicios, CI/CD y FinOps
+
+### Parte 1. Orquestación con Docker Compose / podman-compose
+
+[`docker-compose.yml`](tec-mlops-equipo-27/docker-compose.yml) levanta dos servicios
+que comparten la imagen del `Containerfile`:
+
+| Servicio | Contenedor | Puerto (anfitrión) | Función |
+|---|---|---|---|
+| `mlflow` | `mibici-mlflow` | `127.0.0.1:5000` | Tracking y Model Registry (SQLite + artefactos en el volumen `mlflow_store`) |
+| `api` | `mibici-api` | `127.0.0.1:8000` | FastAPI: `GET /health`, `POST /predict/demanda`, `/docs` |
+
+- **Red** `mibici-equipo27-red`: la API encuentra a MLflow como `http://mlflow:5000`.
+- **Volumen** `mlflow_store` montado en `/mlflow`: persiste entre reinicios y existe
+  aunque el repositorio se acabe de clonar.
+- **Healthchecks y orden de arranque**: la API inicia cuando MLflow responde `/health`;
+  ambos se reinician solos (`restart: unless-stopped`).
+- **Límites de recursos** (`cpus`, `mem_limit`): por defecto 1 CPU y 1 GB por servicio.
+  Hacen reproducible la prueba de carga y son la base del costo por inferencia.
+
+**Levantar todo con un solo comando**, desde `tec-mlops-equipo-27/` con el entorno de
+Python activado:
+
+```bash
+cd tec-mlops-equipo-27
+make up      # prepara modelo_p1/ si falta y ejecuta compose up --build -d
+make ps      # estado de los contenedores
+make logs    # registros en vivo
+make down    # detiene los servicios (el volumen se conserva)
+```
+
+`make up` usa `podman-compose` si está instalado y, si no, `docker compose`
+(se puede forzar con `make up COMPOSE="docker compose"`). Antes de construir revisa
+`modelo_p1/`, que no se versiona:
+
+1. Si existe, se empaqueta tal cual.
+2. Si no existe pero hay un registry local (`mlflow.db`), descarga la versión
+   `champion` con `make modelo` (equivale a `python -m mibici.api.descargar`).
+3. Si no hay ninguno de los dos (clon limpio o GitHub Actions), genera un **modelo de
+   demostración** con `make modelo-demo` ([scripts/modelo_demo.py](tec-mlops-equipo-27/scripts/modelo_demo.py)):
+   un HGB pequeño entrenado con datos sintéticos y con la misma firma de P1. Sirve para
+   validar la orquestación, no para predecir demanda real. `/health` lo reporta con
+   `"alias": "demo"`.
+
+Sin `make` (equivalente):
+
+```bash
+python -m mibici.api.descargar --destino modelo_p1   # o: python scripts/modelo_demo.py
+podman-compose -f docker-compose.yml up --build -d   # o: docker compose up --build -d
+```
+
+**Verificación**
+
+```bash
+curl --fail-with-body http://127.0.0.1:8000/health
+curl --fail-with-body http://127.0.0.1:8000/predict/demanda \
+  -H 'Content-Type: application/json' --data-binary @examples/predict-demanda.json
+curl --fail-with-body http://127.0.0.1:5000/health
+```
+
+**Variables** (opcionales, en la terminal o en un `.env` junto al compose):
+
+| Variable | Defecto | Uso |
+|---|---|---|
+| `API_PUERTO` / `MLFLOW_PUERTO` | `8000` / `5000` | Puertos en el anfitrión |
+| `API_CPUS` / `API_MEMORIA` | `1.0` / `1g` | Límites del contenedor de la API |
+| `MLFLOW_CPUS` / `MLFLOW_MEMORIA` | `1.0` / `1g` | Límites del contenedor de MLflow |
+| `API_MODELO_RUTA` | `/opt/models/p1` | Vacía (`API_MODELO_RUTA=`) para servir desde el registry del servicio `mlflow` |
+| `API_MODELO_ALIAS` | `champion` | Alias que se carga en modo registry |
+
+Las variables de la API llevan el prefijo `API_` para no heredar `MODELO_RUTA` u otras
+variables definidas en la terminal para la ejecución local.

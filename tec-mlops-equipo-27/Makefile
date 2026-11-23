@@ -93,6 +93,49 @@ test:
 	$(PYTHON_INTERPRETER) -m unittest discover -s tests -v
 
 
+# Orquestación (docker-compose.yml): usa podman-compose si existe, si no docker compose
+COMPOSE ?= $(shell if command -v podman-compose >/dev/null 2>&1; then echo podman-compose; else echo docker compose; fi)
+COMPOSE_FILE = docker-compose.yml
+
+## Download the P1 model from the local registry (sqlite:///mlflow.db) into modelo_p1/
+.PHONY: modelo
+modelo:
+	MLFLOW_TRACKING_URI=$${MLFLOW_TRACKING_URI:-sqlite:///mlflow.db} $(PYTHON_INTERPRETER) -m mibici.api.descargar --destino modelo_p1
+
+## Generate a synthetic DEMO model in modelo_p1/ (clean clone / CI, not the real model)
+.PHONY: modelo-demo
+modelo-demo:
+	$(PYTHON_INTERPRETER) scripts/modelo_demo.py --destino modelo_p1
+
+## Prepare modelo_p1/ if missing and start MLflow + API with one command
+.PHONY: up
+up:
+	@if [ ! -f modelo_p1/MLmodel ]; then \
+		if [ -f mlflow.db ]; then \
+			echo ">>> modelo_p1/ no existe: se descarga del registry local (mlflow.db)"; \
+			$(MAKE) modelo; \
+		else \
+			echo ">>> AVISO: sin modelo_p1/ ni mlflow.db; se usa un modelo de DEMOSTRACIÓN"; \
+			$(MAKE) modelo-demo; \
+		fi; \
+	fi
+	$(COMPOSE) -f $(COMPOSE_FILE) up --build -d
+
+## Stop the services (the mlflow_store volume is kept)
+.PHONY: down
+down:
+	$(COMPOSE) -f $(COMPOSE_FILE) down
+
+## Show service status
+.PHONY: ps
+ps:
+	$(COMPOSE) -f $(COMPOSE_FILE) ps
+
+## Follow service logs
+.PHONY: logs
+logs:
+	$(COMPOSE) -f $(COMPOSE_FILE) logs -f
+
 ## Check Python code and tracked/pending files for security issues
 .PHONY: security security-code security-secrets
 security: security-code security-secrets
